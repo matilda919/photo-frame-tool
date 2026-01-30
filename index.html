@@ -779,16 +779,24 @@
 
         // 处理图片
         function processImage(photographer, customText) {
-            // 根据原图尺寸动态设置画布尺寸，保持高分辨率
-            // 如果原图尺寸小于1080，则使用1080作为基准
-            const baseWidth = Math.max(selectedImage.width, 1080);
+            try {
+                // 设置最大画布宽度限制（避免超大图片导致浏览器崩溃）
+                const MAX_WIDTH = 3000; // 最大宽度3000px，足够高清
 
-            // 设置画布尺寸 (9:16 比例)
-            const canvasWidth = baseWidth;
-            const canvasHeight = Math.round(baseWidth * 16 / 9);
+                // 根据原图尺寸动态设置画布尺寸，保持高分辨率
+                // 如果原图尺寸小于1080，则使用1080作为基准
+                // 如果原图尺寸大于MAX_WIDTH，则限制为MAX_WIDTH
+                let baseWidth = Math.max(selectedImage.width, 1080);
+                baseWidth = Math.min(baseWidth, MAX_WIDTH);
 
-            previewCanvas.width = canvasWidth;
-            previewCanvas.height = canvasHeight;
+                console.log(`原图尺寸: ${selectedImage.width}x${selectedImage.height}, 画布宽度: ${baseWidth}`);
+
+                // 设置画布尺寸 (9:16 比例)
+                const canvasWidth = baseWidth;
+                const canvasHeight = Math.round(baseWidth * 16 / 9);
+
+                previewCanvas.width = canvasWidth;
+                previewCanvas.height = canvasHeight;
 
             // 填充白色背景
             ctx.fillStyle = '#FFFFFF';
@@ -977,6 +985,12 @@
             setTimeout(() => {
                 preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
             }, 100);
+            } catch (error) {
+                console.error('图片处理错误:', error);
+                alert('图片处理失败，可能是图片尺寸过大。请尝试使用较小的图片。');
+                loading.classList.remove('show');
+                processBtn.disabled = false;
+            }
         }
 
         // 下载照片
