@@ -1029,17 +1029,24 @@
 
             // 如果有品牌logo图片，在照片下方绘制
             if (brandInfo.logo) {
-                // 根据品牌设置不同的logo高度（因为宽高比不同）
+                // 根据画面比例和品牌设置不同的logo高度
                 let logoHeight = Math.round(50 * scale); // 默认logo高度
+
+                // 1:1画面比例时，减小logo尺寸以避免与水印重叠
+                if (ratio === '1:1') {
+                    logoHeight = Math.round(35 * scale);
+                }
 
                 // Leica和Fujifilm的logo需要更大
                 if (brandInfo.logoKey === 'leica') {
-                    logoHeight = Math.round(120 * scale); // Leica放大到120px
+                    logoHeight = ratio === '1:1' ? Math.round(60 * scale) : Math.round(120 * scale);
                 } else if (brandInfo.logoKey === 'fujifilm') {
-                    logoHeight = Math.round(100 * scale); // Fujifilm放大到100px
+                    logoHeight = ratio === '1:1' ? Math.round(50 * scale) : Math.round(100 * scale);
                 }
 
-                const logoY = photoBottom + Math.round(45 * scale); // 照片下方45px处
+                // 根据画面比例调整logo位置
+                const logoYOffset = ratio === '1:1' ? Math.round(25 * scale) : Math.round(45 * scale);
+                const logoY = photoBottom + logoYOffset;
 
                 // 计算logo宽度（保持宽高比）
                 const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height);
