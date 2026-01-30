@@ -551,31 +551,14 @@
 
                 const data = await response.json();
 
-                // 提取地址信息 - 国家+城市
+                // 只提取城市名称，不要国家、不要县区
                 const addr = data.address || {};
-                let country = addr.country || '';
-                let city = '';
 
-                // 优先获取城市名称
+                // 只返回市级地址
                 if (addr.city) {
-                    city = addr.city;
+                    return addr.city;
                 } else if (addr.town) {
-                    city = addr.town;
-                } else if (addr.village) {
-                    city = addr.village;
-                } else if (addr.county) {
-                    city = addr.county;
-                } else if (addr.state) {
-                    city = addr.state;
-                }
-
-                // 组合国家+城市
-                if (country && city) {
-                    return `${country}${city}`;
-                } else if (city) {
-                    return city;
-                } else if (country) {
-                    return country;
+                    return addr.town;
                 }
 
                 return null;
