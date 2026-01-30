@@ -323,10 +323,10 @@
                 const logoUrls = {
                     'apple': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg',
                     'sony': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/sony.svg',
-                    'fujifilm': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/fujifilm.svg',
+                    'fujifilm': 'https://upload.wikimedia.org/wikipedia/commons/9/96/Fujifilm_logo.svg',
                     'canon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/canon.svg',
                     'nikon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nikon.svg',
-                    'leica': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Leica_Camera_Logo.svg/200px-Leica_Camera_Logo.svg.png',
+                    'leica': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Leica_Camera_Logo.svg',
                     'ricoh': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ricoh.svg'
                 };
 
@@ -340,9 +340,11 @@
                     img.onload = () => {
                         brandLogos[brand] = img;
                         loadedCount++;
+                        console.log(`Logo加载成功: ${brand}`);
 
                         if (loadedCount === totalCount) {
                             logosLoaded = true;
+                            console.log('所有logo加载完成');
                             resolve();
                         }
                     };
@@ -869,15 +871,15 @@
 
             // 如果有品牌logo图片，在照片下方绘制
             if (brandInfo.logo) {
-                const logoHeight = Math.round(30 * scale); // logo高度
-                const logoY = photoBottom + Math.round(35 * scale); // 照片下方35px处
+                const logoHeight = Math.round(50 * scale); // logo高度（增大到50px）
+                const logoY = photoBottom + Math.round(45 * scale); // 照片下方45px处
 
                 // 计算logo宽度（保持宽高比）
                 const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height);
 
                 // SVG logo需要特殊处理（设置透明度和颜色）
                 ctx.save();
-                ctx.globalAlpha = 0.2; // 20%透明度，更精致低调
+                ctx.globalAlpha = 0.25; // 25%透明度，稍微明显一些
 
                 // 居中绘制logo
                 const logoX = (canvasWidth - logoWidth) / 2;
@@ -971,3 +973,4 @@
     </script>
 </body>
 </html>
+
