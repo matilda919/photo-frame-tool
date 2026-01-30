@@ -317,49 +317,84 @@
         let brandLogos = {}; // 存储加载的品牌logo图片
         let logosLoaded = false; // 标记logo是否加载完成
 
-        // 预加载品牌logo图片（使用公开的logo URL）
+        // 预加载品牌logo图片（使用可靠的CDN）
         function loadBrandLogos() {
             return new Promise((resolve) => {
+                // 使用多个备用URL以提高成功率
                 const logoUrls = {
-                    'apple': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg',
-                    'sony': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/sony.svg',
-                    'fujifilm': 'https://upload.wikimedia.org/wikipedia/commons/9/96/Fujifilm_logo.svg',
-                    'canon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/canon.svg',
-                    'nikon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nikon.svg',
-                    'leica': 'https://upload.wikimedia.org/wikipedia/commons/c/ce/Leica_Camera_Logo.svg',
-                    'ricoh': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ricoh.svg'
+                    'apple': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg'
+                    ],
+                    'sony': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/sony.svg',
+                        'https://www.vectorlogo.zone/logos/sony/sony-icon.svg'
+                    ],
+                    'fujifilm': [
+                        'https://www.vectorlogo.zone/logos/fujifilm/fujifilm-ar21.svg',
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/fujifilm.svg'
+                    ],
+                    'canon': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/canon.svg',
+                        'https://www.vectorlogo.zone/logos/canon/canon-icon.svg'
+                    ],
+                    'nikon': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nikon.svg',
+                        'https://www.vectorlogo.zone/logos/nikon/nikon-icon.svg'
+                    ],
+                    'leica': [
+                        'https://www.vectorlogo.zone/logos/leica-camera/leica-camera-ar21.svg',
+                        'https://cdn.worldvectorlogo.com/logos/leica.svg'
+                    ],
+                    'ricoh': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ricoh.svg',
+                        'https://www.vectorlogo.zone/logos/ricoh/ricoh-icon.svg'
+                    ]
                 };
 
                 let loadedCount = 0;
                 const totalCount = Object.keys(logoUrls).length;
 
                 Object.keys(logoUrls).forEach(brand => {
-                    const img = new Image();
-                    img.crossOrigin = 'anonymous';
+                    const urls = logoUrls[brand];
+                    let urlIndex = 0;
 
-                    img.onload = () => {
-                        brandLogos[brand] = img;
-                        loadedCount++;
-                        console.log(`Logo加载成功: ${brand}`);
-
-                        if (loadedCount === totalCount) {
-                            logosLoaded = true;
-                            console.log('所有logo加载完成');
-                            resolve();
+                    const tryLoadImage = () => {
+                        if (urlIndex >= urls.length) {
+                            // 所有URL都失败了
+                            console.log(`Logo加载失败（所有URL尝试完毕）: ${brand}`);
+                            loadedCount++;
+                            if (loadedCount === totalCount) {
+                                logosLoaded = true;
+                                resolve();
+                            }
+                            return;
                         }
+
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+
+                        img.onload = () => {
+                            brandLogos[brand] = img;
+                            loadedCount++;
+                            console.log(`Logo加载成功: ${brand} (URL ${urlIndex + 1})`);
+
+                            if (loadedCount === totalCount) {
+                                logosLoaded = true;
+                                console.log('所有logo加载完成');
+                                resolve();
+                            }
+                        };
+
+                        img.onerror = (e) => {
+                            console.log(`Logo加载失败: ${brand} (URL ${urlIndex + 1})`, e);
+                            urlIndex++;
+                            tryLoadImage(); // 尝试下一个URL
+                        };
+
+                        img.src = urls[urlIndex];
                     };
 
-                    img.onerror = (e) => {
-                        console.log(`Logo加载失败: ${brand}`, e);
-                        loadedCount++;
-
-                        if (loadedCount === totalCount) {
-                            logosLoaded = true;
-                            resolve();
-                        }
-                    };
-
-                    img.src = logoUrls[brand];
+                    tryLoadImage();
                 });
             });
         }
@@ -973,4 +1008,3 @@
     </script>
 </body>
 </html>
-
