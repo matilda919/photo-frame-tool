@@ -245,6 +245,11 @@
             <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
         </div>
 
+        <div class="input-group">
+            <label for="customTextInput">第三行文字（可选）</label>
+            <input type="text" id="customTextInput" placeholder="可选填写，例如：活动名称、祝福语等" value="">
+        </div>
+
         <button class="btn" id="processBtn" disabled>生成照片</button>
         <div class="loading" id="loading">⏳ 正在处理...</div>
 
@@ -314,6 +319,7 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const photographerInput = document.getElementById('photographerInput');
+        const customTextInput = document.getElementById('customTextInput');
         const processBtn = document.getElementById('processBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const preview = document.getElementById('preview');
@@ -581,17 +587,19 @@
                 return;
             }
 
+            const customText = customTextInput.value.trim();
+
             loading.classList.add('show');
             processBtn.disabled = true;
 
             // 使用setTimeout让界面有时间更新
             setTimeout(() => {
-                processImage(photographer);
+                processImage(photographer, customText);
             }, 100);
         });
 
         // 处理图片
-        function processImage(photographer) {
+        function processImage(photographer, customText) {
             // 设置画布尺寸 (9:16 比例)
             const canvasWidth = 1080;
             const canvasHeight = 1920;
@@ -674,6 +682,11 @@
                 watermarkLines.push(locationText);
             }
 
+            // 第三行：自定义文字（如果用户填写了）
+            if (customText) {
+                watermarkLines.push(customText);
+            }
+
             console.log('最终水印行:', watermarkLines);
 
             // 设置文字样式基础属性
@@ -723,8 +736,13 @@
                         // 没有logo，直接居中绘制文字
                         ctx.fillText(line, canvasWidth / 2, textY);
                     }
-                } else {
+                } else if (index === 1) {
                     // 第二行：苹果风格字体，较小斜体
+                    ctx.font = 'italic 24px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.fillStyle = '#86868b';
+                    ctx.fillText(line, canvasWidth / 2, textY);
+                } else {
+                    // 第三行：自定义文字，使用相同样式
                     ctx.font = 'italic 24px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif';
                     ctx.fillStyle = '#86868b';
                     ctx.fillText(line, canvasWidth / 2, textY);
