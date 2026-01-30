@@ -152,6 +152,47 @@
             box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: rgba(99, 102, 241, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+        }
+
+        select option {
+            background: #2c2c2e;
+            color: #ffffff;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-size-info {
+            text-align: center;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 14px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+
         .btn {
             width: 100%;
             padding: 16px;
@@ -293,12 +334,32 @@
             <input type="text" id="customTextInput" placeholder="分享你的心情或想法..." value="">
         </div>
 
+        <div class="options-row">
+            <div class="input-group" style="flex: 1; margin-right: 10px;">
+                <label for="ratioSelect">画面比例</label>
+                <select id="ratioSelect">
+                    <option value="9:16" selected>9:16 竖版</option>
+                    <option value="1:1">1:1 方形</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="flex: 1; margin-left: 10px;">
+                <label for="qualitySelect">导出画质</label>
+                <select id="qualitySelect">
+                    <option value="high" selected>高 (~3-5MB)</option>
+                    <option value="medium">中 (~1-2MB)</option>
+                    <option value="low">低 (~0.5-1MB)</option>
+                </select>
+            </div>
+        </div>
+
         <button class="btn" id="processBtn" disabled>生成照片</button>
         <div class="loading" id="loading">⏳ 正在处理...</div>
 
         <div class="preview" id="preview">
             <div class="preview-title">✨ 预览效果</div>
             <canvas id="previewCanvas"></canvas>
+            <div class="file-size-info" id="fileSizeInfo">预估文件大小：计算中...</div>
             <button class="btn" id="downloadBtn">下载照片</button>
         </div>
     </div>
@@ -406,6 +467,8 @@
         const fileInput = document.getElementById('fileInput');
         const photographerInput = document.getElementById('photographerInput');
         const customTextInput = document.getElementById('customTextInput');
+        const ratioSelect = document.getElementById('ratioSelect');
+        const qualitySelect = document.getElementById('qualitySelect');
         const processBtn = document.getElementById('processBtn');
         const downloadBtn = document.getElementById('downloadBtn');
         const preview = document.getElementById('preview');
@@ -413,6 +476,7 @@
         const deviceInfoDiv = document.getElementById('deviceInfo');
         const deviceNameSpan = document.getElementById('deviceName');
         const loading = document.getElementById('loading');
+        const fileSizeInfo = document.getElementById('fileSizeInfo');
         const ctx = previewCanvas.getContext('2d');
 
         // 拖拽上传
@@ -791,9 +855,19 @@
 
                 console.log(`原图尺寸: ${selectedImage.width}x${selectedImage.height}, 画布宽度: ${baseWidth}`);
 
-                // 设置画布尺寸 (9:16 比例)
-                const canvasWidth = baseWidth;
-                const canvasHeight = Math.round(baseWidth * 16 / 9);
+                // 获取用户选择的比例
+                const ratio = ratioSelect.value;
+                let canvasWidth, canvasHeight;
+
+                if (ratio === '1:1') {
+                    // 1:1 方形
+                    canvasWidth = baseWidth;
+                    canvasHeight = baseWidth;
+                } else {
+                    // 9:16 竖版（默认）
+                    canvasWidth = baseWidth;
+                    canvasHeight = Math.round(baseWidth * 16 / 9);
+                }
 
                 previewCanvas.width = canvasWidth;
                 previewCanvas.height = canvasHeight;
@@ -981,6 +1055,9 @@
             loading.classList.remove('show');
             processBtn.disabled = false;
 
+            // 计算并显示文件大小
+            calculateFileSize();
+
             // 滚动到预览区域
             setTimeout(() => {
                 preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
@@ -993,9 +1070,56 @@
             }
         }
 
+        // 计算预估文件大小
+        function calculateFileSize() {
+            const quality = qualitySelect.value;
+            let qualityValue;
+
+            switch(quality) {
+                case 'high':
+                    qualityValue = 1.0;
+                    break;
+                case 'medium':
+                    qualityValue = 0.8;
+                    break;
+                case 'low':
+                    qualityValue = 0.6;
+                    break;
+                default:
+                    qualityValue = 1.0;
+            }
+
+            // 根据画布尺寸和质量预估文件大小
+            const pixels = previewCanvas.width * previewCanvas.height;
+            // JPEG压缩后，每像素约0.5-1.5字节，取决于质量
+            const bytesPerPixel = 0.5 + qualityValue * 0.8;
+            const estimatedBytes = pixels * bytesPerPixel;
+            const estimatedMB = (estimatedBytes / (1024 * 1024)).toFixed(2);
+
+            fileSizeInfo.textContent = `预估文件大小：${estimatedMB} MB`;
+        }
+
         // 下载照片
         downloadBtn.addEventListener('click', async () => {
             try {
+                // 获取用户选择的画质
+                const quality = qualitySelect.value;
+                let qualityValue;
+
+                switch(quality) {
+                    case 'high':
+                        qualityValue = 1.0;
+                        break;
+                    case 'medium':
+                        qualityValue = 0.8;
+                        break;
+                    case 'low':
+                        qualityValue = 0.6;
+                        break;
+                    default:
+                        qualityValue = 1.0;
+                }
+
                 // 转换为Blob对象
                 previewCanvas.toBlob(async (blob) => {
                     // 检测是否支持 Web Share API（iOS Safari支持）
@@ -1022,7 +1146,7 @@
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     URL.revokeObjectURL(link.href);
-                }, 'image/jpeg', 1.0);
+                }, 'image/jpeg', qualityValue);
             } catch (err) {
                 console.error('下载失败:', err);
                 alert('保存失败，请重试');
