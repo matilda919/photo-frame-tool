@@ -4,6 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>照片加边框工具</title>
+    <!-- EXIF库 -->
+    <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <style>
         * {
             margin: 0;
@@ -359,71 +361,88 @@
             reader.readAsDataURL(file);
         }
 
-        // 读取EXIF信息（完整版）
+        // 读取EXIF信息（使用exif-js库）
         async function readExifData(file) {
+            console.log('开始读取EXIF信息');
+
+            const img = new Image();
             const reader = new FileReader();
-            reader.onload = async (e) => {
-                try {
-                    const view = new DataView(e.target.result);
-                    console.log('开始读取EXIF');
 
-                    if (view.getUint16(0, false) != 0xFFD8) {
-                        console.log('不是JPEG文件');
-                        return;
-                    }
+            reader.onload = function(e) {
+                img.src = e.target.result;
 
-                    let offset = 2;
-                    while (offset < view.byteLength) {
-                        if (offset + 4 > view.byteLength) break;
+                img.onload = function() {
+                    EXIF.getData(img, async function() {
+                        console.log('EXIF数据读取完成');
 
-                        const marker = view.getUint16(offset, false);
-                        offset += 2;
+                        // 读取设备信息
+                        const make = EXIF.getTag(this, 'Make') || '';
+                        const model = EXIF.getTag(this, 'Model') || '';
 
-                        if (marker == 0xFFE1) { // APP1 marker (EXIF)
-                            console.log('找到EXIF数据');
-                            const exifData = getExifData(view, offset);
-                            console.log('读取的完整信息:', exifData);
+                        console.log('Make:', make);
+                        console.log('Model:', model);
 
-                            deviceInfo = exifData;
+                        deviceInfo.make = make;
+                        deviceInfo.model = model;
 
-                            // 显示设备信息
+                        // 显示设备信息
+                        if (make || model) {
                             let deviceText = '';
-                            if (exifData.make || exifData.model) {
-                                if (exifData.make) deviceText += exifData.make;
-                                if (exifData.model) {
-                                    if (deviceText) deviceText += ' ';
-                                    deviceText += exifData.model;
-                                }
+                            if (make) deviceText += make;
+                            if (model) {
+                                if (deviceText) deviceText += ' ';
+                                deviceText += model;
                             }
-                            deviceNameSpan.textContent = deviceText.trim() || '未知设备';
-                            if (deviceText) deviceInfoDiv.classList.add('show');
-
-                            // 如果有GPS信息，进行反向地理编码
-                            if (exifData.gpsLatitude && exifData.gpsLongitude) {
-                                console.log('GPS坐标:', exifData.gpsLatitude, exifData.gpsLongitude);
-                                try {
-                                    const location = await reverseGeocode(exifData.gpsLatitude, exifData.gpsLongitude);
-                                    deviceInfo.location = location;
-                                    console.log('地址:', location);
-                                } catch (err) {
-                                    console.error('地理编码失败:', err);
-                                    deviceInfo.location = `${exifData.gpsLatitude.toFixed(4)}, ${exifData.gpsLongitude.toFixed(4)}`;
-                                }
-                            }
-
-                            break;
-                        } else {
-                            if (offset + 2 > view.byteLength) break;
-                            const segmentLength = view.getUint16(offset, false);
-                            offset += segmentLength;
+                            deviceNameSpan.textContent = deviceText.trim();
+                            deviceInfoDiv.classList.add('show');
                         }
-                    }
-                } catch (err) {
-                    console.error('无法读取EXIF信息', err);
-                    deviceNameSpan.textContent = '未知设备';
-                }
+
+                        // 读取拍摄时间
+                        const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
+                        console.log('拍摄时间:', dateTime);
+                        deviceInfo.dateTime = dateTime;
+
+                        // 读取GPS信息
+                        const lat = EXIF.getTag(this, 'GPSLatitude');
+                        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+                        const lon = EXIF.getTag(this, 'GPSLongitude');
+                        const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
+
+                        if (lat && lon) {
+                            console.log('GPS原始数据:', lat, latRef, lon, lonRef);
+
+                            // 转换为十进制度数
+                            const latitude = convertDMSToDD2(lat[0], lat[1], lat[2], latRef);
+                            const longitude = convertDMSToDD2(lon[0], lon[1], lon[2], lonRef);
+
+                            console.log('GPS坐标:', latitude, longitude);
+                            deviceInfo.gpsLatitude = latitude;
+                            deviceInfo.gpsLongitude = longitude;
+
+                            // 获取地址
+                            try {
+                                const location = await reverseGeocode(latitude, longitude);
+                                deviceInfo.location = location;
+                                console.log('地址:', location);
+                            } catch (err) {
+                                console.error('地理编码失败:', err);
+                            }
+                        }
+
+                        console.log('最终deviceInfo:', deviceInfo);
+                    });
+                };
             };
-            reader.readAsArrayBuffer(file);
+
+            reader.readAsDataURL(file);
+        }
+
+        function convertDMSToDD2(degrees, minutes, seconds, direction) {
+            let dd = degrees + minutes / 60 + seconds / 3600;
+            if (direction === 'S' || direction === 'W') {
+                dd = dd * -1;
+            }
+            return dd;
         }
 
         // 反向地理编码（使用免费的nominatim服务）
@@ -464,197 +483,6 @@
                 console.error('地理编码API错误:', err);
                 return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
             }
-        }
-
-        // 解析EXIF数据（完整版）
-        function getExifData(view, offset) {
-            const result = {
-                make: '',
-                model: '',
-                dateTime: '',
-                gpsLatitude: null,
-                gpsLongitude: null,
-                location: ''
-            };
-
-            try {
-                const length = view.getUint16(offset, false);
-                offset += 2;
-
-                // 检查Exif标识
-                if (offset + 6 > view.byteLength) return result;
-                if (view.getUint32(offset, false) != 0x45786966) return result; // "Exif"
-                offset += 4;
-                if (view.getUint16(offset, false) != 0x0000) return result;
-                offset += 2;
-
-                // TIFF header
-                if (offset + 8 > view.byteLength) return result;
-                const tiffStart = offset;
-                const little = view.getUint16(offset, false) == 0x4949;
-                console.log('字节序:', little ? 'Little Endian' : 'Big Endian');
-
-                offset += 2;
-                if (view.getUint16(offset, little) != 0x002A) return result;
-                offset += 2;
-
-                const ifdOffset = view.getUint32(offset, little);
-                offset = tiffStart + ifdOffset;
-
-                // 读取IFD0
-                if (offset + 2 > view.byteLength) return result;
-                const tags = view.getUint16(offset, little);
-                console.log('IFD0标签数量:', tags);
-                offset += 2;
-
-                let exifIFDOffset = 0;
-                let gpsIFDOffset = 0;
-
-                for (let i = 0; i < tags; i++) {
-                    const entryOffset = offset + (i * 12);
-                    if (entryOffset + 12 > view.byteLength) break;
-
-                    const tag = view.getUint16(entryOffset, little);
-                    const type = view.getUint16(entryOffset + 2, little);
-                    const count = view.getUint32(entryOffset + 4, little);
-                    const valueOffset = view.getUint32(entryOffset + 8, little);
-
-                    if (tag == 0x010F) { // Make
-                        result.make = getStringValue(view, tiffStart, type, count, valueOffset, little);
-                        console.log('Make:', result.make);
-                    } else if (tag == 0x0110) { // Model
-                        result.model = getStringValue(view, tiffStart, type, count, valueOffset, little);
-                        console.log('Model:', result.model);
-                    } else if (tag == 0x8769) { // ExifIFD
-                        exifIFDOffset = valueOffset;
-                    } else if (tag == 0x8825) { // GPS IFD
-                        gpsIFDOffset = valueOffset;
-                    }
-                }
-
-                // 读取Exif SubIFD（包含拍摄时间）
-                if (exifIFDOffset > 0) {
-                    const exifOffset = tiffStart + exifIFDOffset;
-                    if (exifOffset + 2 <= view.byteLength) {
-                        const exifTags = view.getUint16(exifOffset, little);
-                        console.log('Exif SubIFD标签数量:', exifTags);
-
-                        for (let i = 0; i < exifTags; i++) {
-                            const entryOffset = exifOffset + 2 + (i * 12);
-                            if (entryOffset + 12 > view.byteLength) break;
-
-                            const tag = view.getUint16(entryOffset, little);
-                            const type = view.getUint16(entryOffset + 2, little);
-                            const count = view.getUint32(entryOffset + 4, little);
-                            const valueOffset = view.getUint32(entryOffset + 8, little);
-
-                            if (tag == 0x9003) { // DateTimeOriginal
-                                result.dateTime = getStringValue(view, tiffStart, type, count, valueOffset, little);
-                                console.log('拍摄时间:', result.dateTime);
-                            }
-                        }
-                    }
-                }
-
-                // 读取GPS IFD
-                if (gpsIFDOffset > 0) {
-                    const gpsOffset = tiffStart + gpsIFDOffset;
-                    if (gpsOffset + 2 <= view.byteLength) {
-                        const gpsTags = view.getUint16(gpsOffset, little);
-                        console.log('GPS标签数量:', gpsTags);
-
-                        let latRef = '', lonRef = '';
-                        let latData = [], lonData = [];
-
-                        for (let i = 0; i < gpsTags; i++) {
-                            const entryOffset = gpsOffset + 2 + (i * 12);
-                            if (entryOffset + 12 > view.byteLength) break;
-
-                            const tag = view.getUint16(entryOffset, little);
-                            const type = view.getUint16(entryOffset + 2, little);
-                            const count = view.getUint32(entryOffset + 4, little);
-                            const valueOffset = view.getUint32(entryOffset + 8, little);
-
-                            if (tag == 0x0001) { // GPSLatitudeRef
-                                latRef = String.fromCharCode(view.getUint8(tiffStart + valueOffset));
-                            } else if (tag == 0x0002) { // GPSLatitude
-                                latData = getRationalArray(view, tiffStart + valueOffset, count, little);
-                            } else if (tag == 0x0003) { // GPSLongitudeRef
-                                lonRef = String.fromCharCode(view.getUint8(tiffStart + valueOffset));
-                            } else if (tag == 0x0004) { // GPSLongitude
-                                lonData = getRationalArray(view, tiffStart + valueOffset, count, little);
-                            }
-                        }
-
-                        // 转换GPS坐标
-                        if (latData.length >= 3 && lonData.length >= 3) {
-                            result.gpsLatitude = convertDMSToDD(latData[0], latData[1], latData[2], latRef);
-                            result.gpsLongitude = convertDMSToDD(lonData[0], lonData[1], lonData[2], lonRef);
-                            console.log('GPS坐标:', result.gpsLatitude, result.gpsLongitude);
-                        }
-                    }
-                }
-
-            } catch (err) {
-                console.error('EXIF解析错误', err);
-            }
-            return result;
-        }
-
-        function getStringValue(view, tiffStart, type, count, valueOffset, little) {
-            if (type != 2) return ''; // 必须是ASCII字符串类型
-
-            try {
-                let str = '';
-                let offset;
-
-                // 如果字符串长度<=4，值直接存储在valueOffset字段中
-                if (count <= 4) {
-                    const bytes = [
-                        (valueOffset) & 0xFF,
-                        (valueOffset >> 8) & 0xFF,
-                        (valueOffset >> 16) & 0xFF,
-                        (valueOffset >> 24) & 0xFF
-                    ];
-                    for (let i = 0; i < Math.min(count - 1, 4); i++) {
-                        if (bytes[i] === 0) break;
-                        str += String.fromCharCode(bytes[i]);
-                    }
-                } else {
-                    // 否则valueOffset是一个指向实际字符串的偏移量
-                    offset = tiffStart + valueOffset;
-                    if (offset + count > view.byteLength) return '';
-
-                    for (let i = 0; i < count - 1; i++) {
-                        const charCode = view.getUint8(offset + i);
-                        if (charCode === 0) break;
-                        str += String.fromCharCode(charCode);
-                    }
-                }
-
-                return str.trim();
-            } catch (err) {
-                console.error('字符串读取错误', err);
-                return '';
-            }
-        }
-
-        function getRationalArray(view, offset, count, little) {
-            const result = [];
-            for (let i = 0; i < count; i++) {
-                const numerator = view.getUint32(offset + (i * 8), little);
-                const denominator = view.getUint32(offset + (i * 8) + 4, little);
-                result.push(denominator !== 0 ? numerator / denominator : 0);
-            }
-            return result;
-        }
-
-        function convertDMSToDD(degrees, minutes, seconds, direction) {
-            let dd = degrees + minutes / 60 + seconds / 3600;
-            if (direction === 'S' || direction === 'W') {
-                dd = dd * -1;
-            }
-            return dd;
         }
 
         // 生成照片
