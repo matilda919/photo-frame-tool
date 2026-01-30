@@ -266,31 +266,57 @@
             location: ''
         };
         let brandLogos = {}; // 存储加载的品牌logo图片
+        let logosLoaded = false; // 标记logo是否加载完成
 
         // 预加载品牌logo图片
         function loadBrandLogos() {
-            const logoFiles = {
-                'apple': 'logos/Apple-Logo.png',
-                'fujifilm': 'logos/Fujifilm-logo.png',
-                'leica': 'logos/Leica-Logo.png'
-            };
+            return new Promise((resolve) => {
+                const logoFiles = {
+                    'apple': 'logos/Apple-Logo.png',
+                    'fujifilm': 'logos/Fujifilm-logo.png',
+                    'leica': 'logos/Leica-Logo.png'
+                };
 
-            Object.keys(logoFiles).forEach(brand => {
-                const img = new Image();
-                img.crossOrigin = 'anonymous';
-                img.onload = () => {
-                    brandLogos[brand] = img;
-                    console.log(`${brand} logo加载成功`);
-                };
-                img.onerror = () => {
-                    console.log(`${brand} logo加载失败`);
-                };
-                img.src = logoFiles[brand];
+                let loadedCount = 0;
+                const totalCount = Object.keys(logoFiles).length;
+
+                Object.keys(logoFiles).forEach(brand => {
+                    const img = new Image();
+                    img.crossOrigin = 'anonymous';
+
+                    img.onload = () => {
+                        brandLogos[brand] = img;
+                        loadedCount++;
+                        console.log(`${brand} logo加载成功，尺寸: ${img.width}x${img.height}`);
+
+                        if (loadedCount === totalCount) {
+                            logosLoaded = true;
+                            console.log('所有logo加载完成！', brandLogos);
+                            resolve();
+                        }
+                    };
+
+                    img.onerror = (e) => {
+                        loadedCount++;
+                        console.error(`${brand} logo加载失败:`, logoFiles[brand], e);
+
+                        if (loadedCount === totalCount) {
+                            logosLoaded = true;
+                            console.log('Logo加载完成（部分失败）');
+                            resolve();
+                        }
+                    };
+
+                    img.src = logoFiles[brand];
+                    console.log(`开始加载 ${brand} logo:`, logoFiles[brand]);
+                });
             });
         }
 
         // 页面加载时预加载logo
-        loadBrandLogos();
+        loadBrandLogos().then(() => {
+            console.log('Logo预加载完成，可以开始使用');
+        });
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -627,6 +653,9 @@
             // 识别品牌并获取logo
             const brandInfo = getBrandInfo(deviceInfo.make);
             console.log('品牌信息:', brandInfo);
+            console.log('Logo对象:', brandInfo.logo);
+            console.log('所有已加载的logos:', brandLogos);
+            console.log('logosLoaded状态:', logosLoaded);
 
             // 格式化拍摄时间
             let dateText = '';
