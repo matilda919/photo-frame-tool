@@ -906,7 +906,16 @@
 
             // 如果有品牌logo图片，在照片下方绘制
             if (brandInfo.logo) {
-                const logoHeight = Math.round(50 * scale); // logo高度（增大到50px）
+                // 根据品牌设置不同的logo高度（因为宽高比不同）
+                let logoHeight = Math.round(50 * scale); // 默认logo高度
+
+                // Leica和Fujifilm的logo需要更大
+                if (brandInfo.logoKey === 'leica') {
+                    logoHeight = Math.round(80 * scale); // Leica放大到80px
+                } else if (brandInfo.logoKey === 'fujifilm') {
+                    logoHeight = Math.round(70 * scale); // Fujifilm放大到70px
+                }
+
                 const logoY = photoBottom + Math.round(45 * scale); // 照片下方45px处
 
                 // 计算logo宽度（保持宽高比）
