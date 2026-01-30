@@ -93,10 +93,12 @@
         }
 
         .upload-icon {
-            font-size: 64px;
-            margin-bottom: 12px;
+            width: 100px;
+            height: 100px;
+            margin-bottom: 15px;
             pointer-events: none;
             animation: bounce 2s ease-in-out infinite;
+            object-fit: contain;
         }
 
         @keyframes bounce {
@@ -104,13 +106,13 @@
                 transform: translateY(0) rotate(0deg);
             }
             25% {
-                transform: translateY(-10px) rotate(-5deg);
+                transform: translateY(-10px) rotate(-3deg);
             }
             50% {
                 transform: translateY(0) rotate(0deg);
             }
             75% {
-                transform: translateY(-5px) rotate(5deg);
+                transform: translateY(-5px) rotate(3deg);
             }
         }
 
@@ -123,13 +125,13 @@
                 transform: scale(1) rotate(0deg);
             }
             25% {
-                transform: scale(1.3) rotate(-15deg);
+                transform: scale(1.2) rotate(-10deg);
             }
             50% {
-                transform: scale(1.1) rotate(15deg);
+                transform: scale(1.1) rotate(10deg);
             }
             75% {
-                transform: scale(1.2) rotate(-10deg);
+                transform: scale(1.15) rotate(-5deg);
             }
             100% {
                 transform: scale(1) rotate(0deg);
@@ -348,7 +350,7 @@
         <p class="subtitle">为照片添加精美边框与水印</p>
 
         <div class="upload-area" id="uploadArea">
-            <div class="upload-icon">🎨</div>
+            <img class="upload-icon" id="uploadIcon" src="https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/waiting.png" alt="上传图标">
             <div class="upload-text">点击上传照片</div>
             <input type="file" id="fileInput" accept="image/*">
         </div>
@@ -582,11 +584,11 @@
                 img.onload = () => {
                     console.log('图片加载成功', img.width, img.height);
                     selectedImage = img;
-                    const uploadIcon = uploadArea.querySelector('.upload-icon');
+                    const uploadIcon = document.getElementById('uploadIcon');
                     const uploadText = uploadArea.querySelector('.upload-text');
 
                     // 更换为可爱的成功图标
-                    uploadIcon.textContent = '🎉';
+                    uploadIcon.src = 'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/success.png';
                     uploadIcon.classList.add('success');
                     uploadText.textContent = '照片已选择';
 
