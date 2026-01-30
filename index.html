@@ -851,14 +851,47 @@
 
             console.log('最终水印行:', watermarkLines);
 
+            // 在照片和水印之间绘制品牌logo（文字形式）
+            const photoBottom = drawY + drawHeight;
+            const canvasBottom = canvasHeight - padding;
+            const availableSpace = canvasBottom - photoBottom;
+
+            // 获取品牌名称用于logo
+            let brandLogoText = '';
+            if (deviceInfo.make) {
+                const makeUpper = deviceInfo.make.toUpperCase();
+                if (makeUpper.includes('APPLE')) {
+                    brandLogoText = 'Apple';
+                } else if (makeUpper.includes('SONY')) {
+                    brandLogoText = 'SONY';
+                } else if (makeUpper.includes('FUJI')) {
+                    brandLogoText = 'FUJIFILM';
+                } else if (makeUpper.includes('CANON')) {
+                    brandLogoText = 'Canon';
+                } else if (makeUpper.includes('NIKON')) {
+                    brandLogoText = 'Nikon';
+                } else if (makeUpper.includes('LEICA')) {
+                    brandLogoText = 'LEICA';
+                }
+            }
+
+            // 如果有品牌信息，在照片下方绘制品牌logo
+            if (brandLogoText) {
+                const logoFontSize = Math.round(36 * scale);
+                const logoY = photoBottom + Math.round(40 * scale); // 照片下方40px处
+
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.font = `${logoFontSize}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // 淡灰色，更精致
+                ctx.fillText(brandLogoText, canvasWidth / 2, logoY);
+            }
+
             // 设置文字样式基础属性
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
             // 计算水印位置：照片底部和白边框底部的中间
-            const photoBottom = drawY + drawHeight;
-            const canvasBottom = canvasHeight - padding;
-            const availableSpace = canvasBottom - photoBottom;
             const lineHeight = Math.round(35 * scale);
             const totalTextHeight = watermarkLines.length * lineHeight;
 
