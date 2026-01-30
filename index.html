@@ -317,19 +317,23 @@
         let brandLogos = {}; // 存储加载的品牌logo图片
         let logosLoaded = false; // 标记logo是否加载完成
 
-        // 预加载品牌logo图片
+        // 预加载品牌logo图片（使用公开的logo URL）
         function loadBrandLogos() {
             return new Promise((resolve) => {
-                const logoFiles = {
-                    'apple': 'logos/Apple-Logo.png',
-                    'fujifilm': 'logos/Fujifilm-logo.png',
-                    'leica': 'logos/Leica-Logo.png'
+                const logoUrls = {
+                    'apple': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/apple.svg',
+                    'sony': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/sony.svg',
+                    'fujifilm': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/fujifilm.svg',
+                    'canon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/canon.svg',
+                    'nikon': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nikon.svg',
+                    'leica': 'https://upload.wikimedia.org/wikipedia/commons/thumb/c/ce/Leica_Camera_Logo.svg/200px-Leica_Camera_Logo.svg.png',
+                    'ricoh': 'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/ricoh.svg'
                 };
 
                 let loadedCount = 0;
-                const totalCount = Object.keys(logoFiles).length;
+                const totalCount = Object.keys(logoUrls).length;
 
-                Object.keys(logoFiles).forEach(brand => {
+                Object.keys(logoUrls).forEach(brand => {
                     const img = new Image();
                     img.crossOrigin = 'anonymous';
 
@@ -344,6 +348,7 @@
                     };
 
                     img.onerror = (e) => {
+                        console.log(`Logo加载失败: ${brand}`, e);
                         loadedCount++;
 
                         if (loadedCount === totalCount) {
@@ -352,7 +357,7 @@
                         }
                     };
 
-                    img.src = logoFiles[brand];
+                    img.src = logoUrls[brand];
                 });
             });
         }
@@ -575,16 +580,20 @@
 
         // 识别相机品牌并返回logo信息
         function getBrandInfo(make) {
-            if (!make) return { logo: null, color: '#333' };
+            if (!make) return { logo: null, logoKey: null, color: '#333' };
 
             const makeUpper = make.toUpperCase();
 
             // 品牌映射表
             const brandMap = {
                 'APPLE': 'apple',
+                'SONY': 'sony',
                 'FUJIFILM': 'fujifilm',
                 'FUJI': 'fujifilm',
-                'LEICA': 'leica'
+                'CANON': 'canon',
+                'NIKON': 'nikon',
+                'LEICA': 'leica',
+                'RICOH': 'ricoh'
             };
 
             for (const [brand, logoKey] of Object.entries(brandMap)) {
@@ -597,7 +606,7 @@
                 }
             }
 
-            return { logo: null, color: '#333' };
+            return { logo: null, logoKey: null, color: '#333' };
         }
 
         // 反向地理编码（使用免费的nominatim服务）
@@ -783,7 +792,7 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            // 处理设备名称：索尼和富士需要加品牌名
+            // 处理设备名称：索尼、富士、理光需要加品牌名
             let deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
             if (deviceInfo.make) {
                 const makeUpper = deviceInfo.make.toUpperCase();
@@ -791,11 +800,10 @@
                     deviceText = `Sony ${deviceInfo.model}`;
                 } else if ((makeUpper.includes('FUJI') || makeUpper.includes('FUJIFILM')) && deviceInfo.model) {
                     deviceText = `Fujifilm ${deviceInfo.model}`;
+                } else if (makeUpper.includes('RICOH') && deviceInfo.model) {
+                    deviceText = `Ricoh ${deviceInfo.model}`;
                 }
             }
-
-            // 识别品牌并获取logo
-            const brandInfo = getBrandInfo(deviceInfo.make);
 
             // 格式化拍摄时间
             let dateText = '';
@@ -851,40 +859,31 @@
 
             console.log('最终水印行:', watermarkLines);
 
-            // 在照片和水印之间绘制品牌logo（文字形式）
+            // 在照片和水印之间绘制品牌logo（图片形式）
             const photoBottom = drawY + drawHeight;
             const canvasBottom = canvasHeight - padding;
             const availableSpace = canvasBottom - photoBottom;
 
-            // 获取品牌名称用于logo
-            let brandLogoText = '';
-            if (deviceInfo.make) {
-                const makeUpper = deviceInfo.make.toUpperCase();
-                if (makeUpper.includes('APPLE')) {
-                    brandLogoText = 'Apple';
-                } else if (makeUpper.includes('SONY')) {
-                    brandLogoText = 'SONY';
-                } else if (makeUpper.includes('FUJI')) {
-                    brandLogoText = 'FUJIFILM';
-                } else if (makeUpper.includes('CANON')) {
-                    brandLogoText = 'Canon';
-                } else if (makeUpper.includes('NIKON')) {
-                    brandLogoText = 'Nikon';
-                } else if (makeUpper.includes('LEICA')) {
-                    brandLogoText = 'LEICA';
-                }
-            }
+            // 获取品牌logo信息
+            const brandInfo = getBrandInfo(deviceInfo.make);
 
-            // 如果有品牌信息，在照片下方绘制品牌logo
-            if (brandLogoText) {
-                const logoFontSize = Math.round(36 * scale);
-                const logoY = photoBottom + Math.round(40 * scale); // 照片下方40px处
+            // 如果有品牌logo图片，在照片下方绘制
+            if (brandInfo.logo) {
+                const logoHeight = Math.round(30 * scale); // logo高度
+                const logoY = photoBottom + Math.round(35 * scale); // 照片下方35px处
 
-                ctx.textAlign = 'center';
-                ctx.textBaseline = 'middle';
-                ctx.font = `${logoFontSize}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
-                ctx.fillStyle = 'rgba(0, 0, 0, 0.15)'; // 淡灰色，更精致
-                ctx.fillText(brandLogoText, canvasWidth / 2, logoY);
+                // 计算logo宽度（保持宽高比）
+                const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height);
+
+                // SVG logo需要特殊处理（设置透明度和颜色）
+                ctx.save();
+                ctx.globalAlpha = 0.2; // 20%透明度，更精致低调
+
+                // 居中绘制logo
+                const logoX = (canvasWidth - logoWidth) / 2;
+                ctx.drawImage(brandInfo.logo, logoX, logoY - logoHeight / 2, logoWidth, logoHeight);
+
+                ctx.restore();
             }
 
             // 设置文字样式基础属性
@@ -908,33 +907,7 @@
                     // 第一行：苹果风格字体，较大斜体
                     ctx.font = `italic ${fontSize1}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
                     ctx.fillStyle = '#1d1d1f';
-
-                    // 如果有品牌logo图片，绘制logo
-                    if (brandInfo.logo) {
-                        // 测量文字宽度
-                        const textWidth = ctx.measureText(line).width;
-                        const logoHeight = fontSize1; // logo高度
-                        const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height); // 等比例缩放宽度
-                        const spacing = Math.round(12 * scale); // logo和文字间距
-                        const totalWidth = logoWidth + spacing + textWidth;
-
-                        // 计算起始x位置（居中）
-                        const startX = (canvasWidth - totalWidth) / 2;
-
-                        // 绘制logo图片
-                        ctx.save();
-                        const logoY = textY - logoHeight / 2; // 垂直居中
-                        ctx.drawImage(brandInfo.logo, startX, logoY, logoWidth, logoHeight);
-                        ctx.restore();
-
-                        // 绘制文字（在logo右侧）
-                        ctx.textAlign = 'left';
-                        ctx.fillText(line, startX + logoWidth + spacing, textY);
-                        ctx.textAlign = 'center'; // 恢复居中
-                    } else {
-                        // 没有logo，直接居中绘制文字
-                        ctx.fillText(line, canvasWidth / 2, textY);
-                    }
+                    ctx.fillText(line, canvasWidth / 2, textY);
                 } else if (index === 1) {
                     // 第二行：苹果风格字体，较小斜体
                     ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
