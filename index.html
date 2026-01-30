@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>照片加边框工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 500px;
+            width: 100%;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 24px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+            margin-bottom: 25px;
+        }
+
+        .upload-area {
+            position: relative;
+            border: 2px dashed #667eea;
+            border-radius: 15px;
+            padding: 40px 20px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            background: #f8f9ff;
+            margin-bottom: 20px;
+        }
+
+        .upload-area:hover {
+            border-color: #5568d3;
+            background: #f0f2ff;
+        }
+
+        .upload-area.dragover {
+            border-color: #4caf50;
+            background: #e8f5e9;
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 10px;
+            pointer-events: none;
+        }
+
+        .upload-text {
+            color: #667eea;
+            font-size: 16px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 10px;
+            font-size: 16px;
+            transition: all 0.3s;
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 15px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 10px;
+        }
+
+        .btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .preview {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview.show {
+            display: block;
+        }
+
+        .preview-title {
+            text-align: center;
+            color: #333;
+            margin-bottom: 15px;
+            font-weight: 600;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            border-radius: 10px;
+            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .info {
+            background: #fff3cd;
+            border: 1px solid #ffc107;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 20px;
+            font-size: 13px;
+            color: #856404;
+        }
+
+        .device-info {
+            background: #e8f5e9;
+            border-radius: 10px;
+            padding: 12px;
+            margin-bottom: 15px;
+            font-size: 13px;
+            color: #2e7d32;
+            display: none;
+        }
+
+        .device-info.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: #667eea;
+            margin-top: 10px;
+            display: none;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 20px;
+            }
+
+            h1 {
+                font-size: 20px;
+            }
+
+            .upload-area {
+                padding: 30px 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📷 照片加边框工具</h1>
+        <p class="subtitle">为照片添加白色边框和水印</p>
+
+        <div class="info">
+            💡 选择照片后，会自动读取拍摄设备信息（如果有）
+        </div>
+
+        <div class="upload-area" id="uploadArea">
+            <div class="upload-icon">📁</div>
+            <div class="upload-text">点击这里选择照片</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="device-info" id="deviceInfo">
+            📱 检测到设备：<span id="deviceName">未知</span>
+        </div>
+
+        <div class="input-group">
+            <label for="photographerInput">拍摄者名称</label>
+            <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
+        </div>
+
+        <button class="btn" id="processBtn" disabled>生成照片</button>
+        <div class="loading" id="loading">⏳ 正在处理...</div>
+
+        <div class="preview" id="preview">
+            <div class="preview-title">✨ 预览效果</div>
+            <canvas id="previewCanvas"></canvas>
+            <button class="btn" id="downloadBtn">下载照片</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedImage = null;
+        let deviceInfo = {
+            make: '',
+            model: ''
+        };
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const photographerInput = document.getElementById('photographerInput');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const preview = document.getElementById('preview');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const deviceInfoDiv = document.getElementById('deviceInfo');
+        const deviceNameSpan = document.getElementById('deviceName');
+        const loading = document.getElementById('loading');
+        const ctx = previewCanvas.getContext('2d');
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            console.log('文件选择事件触发', e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 添加input事件作为备用
+        fileInput.addEventListener('input', (e) => {
+            console.log('input事件触发', e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 处理文件
+        function handleFile(file) {
+            console.log('handleFile被调用', file);
+
+            if (!file) {
+                console.log('文件为空');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                console.log('文件类型不正确:', file.type);
+                return;
+            }
+
+            console.log('开始读取文件');
+            const reader = new FileReader();
+
+            reader.onerror = (error) => {
+                console.error('文件读取错误:', error);
+                alert('文件读取失败，请重试');
+            };
+
+            reader.onload = (e) => {
+                console.log('文件读取完成');
+                const img = new Image();
+
+                img.onerror = (error) => {
+                    console.error('图片加载错误:', error);
+                    alert('图片加载失败，请重试');
+                };
+
+                img.onload = () => {
+                    console.log('图片加载成功', img.width, img.height);
+                    selectedImage = img;
+                    uploadArea.querySelector('.upload-icon').textContent = '✅';
+                    uploadArea.querySelector('.upload-text').textContent = '照片已选择';
+                    processBtn.disabled = false;
+                    console.log('按钮已启用');
+
+                    // 读取EXIF信息
+                    readExifData(file);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 读取EXIF信息
+        function readExifData(file) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                try {
+                    const view = new DataView(e.target.result);
+                    if (view.getUint16(0, false) != 0xFFD8) return;
+
+                    let offset = 2;
+                    while (offset < view.byteLength) {
+                        const marker = view.getUint16(offset, false);
+                        offset += 2;
+
+                        if (marker == 0xFFE1) { // APP1 marker (EXIF)
+                            const exifData = getExifData(view, offset);
+                            if (exifData.make || exifData.model) {
+                                deviceInfo = exifData;
+                                let deviceText = '';
+                                if (exifData.make) deviceText += exifData.make;
+                                if (exifData.model) deviceText += ' ' + exifData.model;
+                                deviceNameSpan.textContent = deviceText.trim() || '未知设备';
+                                deviceInfoDiv.classList.add('show');
+                            }
+                            break;
+                        } else {
+                            offset += view.getUint16(offset, false);
+                        }
+                    }
+                } catch (err) {
+                    console.log('无法读取EXIF信息', err);
+                    deviceNameSpan.textContent = '未知设备';
+                }
+            };
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 解析EXIF数据
+        function getExifData(view, offset) {
+            const result = { make: '', model: '' };
+            try {
+                offset += 4;
+                if (view.getUint32(offset, false) != 0x45786966) return result;
+                offset += 6;
+
+                const little = view.getUint16(offset, false) == 0x4949;
+                offset += view.getUint32(offset + 4, little);
+
+                const tags = view.getUint16(offset, little);
+                offset += 2;
+
+                for (let i = 0; i < tags; i++) {
+                    const tag = view.getUint16(offset + (i * 12), little);
+                    if (tag == 0x010F) { // Make
+                        result.make = getStringValue(view, offset + (i * 12), little);
+                    } else if (tag == 0x0110) { // Model
+                        result.model = getStringValue(view, offset + (i * 12), little);
+                    }
+                }
+            } catch (err) {
+                console.log('EXIF解析错误', err);
+            }
+            return result;
+        }
+
+        function getStringValue(view, offset, little) {
+            const type = view.getUint16(offset + 2, little);
+            const count = view.getUint32(offset + 4, little);
+            const valueOffset = view.getUint32(offset + 8, little);
+
+            if (type != 2) return '';
+
+            let str = '';
+            for (let i = 0; i < count - 1; i++) {
+                str += String.fromCharCode(view.getUint8(valueOffset + i));
+            }
+            return str;
+        }
+
+        // 生成照片
+        processBtn.addEventListener('click', () => {
+            if (!selectedImage) {
+                alert('请先选择照片！');
+                return;
+            }
+
+            const photographer = photographerInput.value.trim();
+            if (!photographer) {
+                alert('请输入拍摄者名称！');
+                return;
+            }
+
+            loading.classList.add('show');
+            processBtn.disabled = true;
+
+            // 使用setTimeout让界面有时间更新
+            setTimeout(() => {
+                processImage(photographer);
+            }, 100);
+        });
+
+        // 处理图片
+        function processImage(photographer) {
+            // 设置画布尺寸 (9:16 比例)
+            const canvasWidth = 1080;
+            const canvasHeight = 1920;
+
+            previewCanvas.width = canvasWidth;
+            previewCanvas.height = canvasHeight;
+
+            // 填充白色背景
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // 计算照片区域 (留出上下左右边距和底部水印空间)
+            const padding = 60;
+            const bottomSpace = 120; // 底部留给水印的空间
+            const photoAreaWidth = canvasWidth - (padding * 2);
+            const photoAreaHeight = canvasHeight - (padding * 2) - bottomSpace;
+
+            // 计算照片缩放比例，保持原始宽高比
+            const imgRatio = selectedImage.width / selectedImage.height;
+            const areaRatio = photoAreaWidth / photoAreaHeight;
+
+            let drawWidth, drawHeight, drawX, drawY;
+
+            if (imgRatio > areaRatio) {
+                // 照片更宽，以宽度为准
+                drawWidth = photoAreaWidth;
+                drawHeight = photoAreaWidth / imgRatio;
+            } else {
+                // 照片更高，以高度为准
+                drawHeight = photoAreaHeight;
+                drawWidth = photoAreaHeight * imgRatio;
+            }
+
+            // 居中计算
+            drawX = padding + (photoAreaWidth - drawWidth) / 2;
+            drawY = padding + (photoAreaHeight - drawHeight) / 2;
+
+            // 绘制照片
+            ctx.drawImage(selectedImage, drawX, drawY, drawWidth, drawHeight);
+
+            // 绘制水印文字
+            const deviceText = deviceInfo.make || deviceInfo.model
+                ? `${deviceInfo.make} ${deviceInfo.model}`.trim()
+                : '未知设备';
+            const watermarkText = `${photographer}用${deviceText}拍摄`;
+
+            // 设置文字样式
+            ctx.fillStyle = '#333333';
+            ctx.font = '24px -apple-system, sans-serif';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 在底部居中绘制文字
+            const textY = canvasHeight - bottomSpace / 2 - 10;
+            ctx.fillText(watermarkText, canvasWidth / 2, textY);
+
+            // 显示预览
+            preview.classList.add('show');
+            loading.classList.remove('show');
+            processBtn.disabled = false;
+
+            // 滚动到预览区域
+            setTimeout(() => {
+                preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+        }
+
+        // 下载照片
+        downloadBtn.addEventListener('click', () => {
+            const link = document.createElement('a');
+            const timestamp = new Date().getTime();
+            link.download = `photo_with_frame_${timestamp}.jpg`;
+            link.href = previewCanvas.toDataURL('image/jpeg', 0.95);
+            link.click();
+        });
+    </script>
+</body>
+</html>
