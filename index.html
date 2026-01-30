@@ -361,80 +361,89 @@
             reader.readAsDataURL(file);
         }
 
-        // 读取EXIF信息（使用exif-js库）
-        async function readExifData(file) {
-            console.log('开始读取EXIF信息');
+        // 读取EXIF信息（使用exif-js库，修复版）
+        function readExifData(file) {
+            return new Promise((resolve) => {
+                console.log('开始读取EXIF信息');
 
-            const img = new Image();
-            const reader = new FileReader();
+                const img = new Image();
+                const reader = new FileReader();
 
-            reader.onload = function(e) {
-                img.src = e.target.result;
+                reader.onload = function(e) {
+                    img.src = e.target.result;
 
-                img.onload = function() {
-                    EXIF.getData(img, async function() {
-                        console.log('EXIF数据读取完成');
+                    img.onload = function() {
+                        EXIF.getData(img, async function() {
+                            console.log('EXIF数据读取完成');
+                            console.log('所有EXIF标签:', EXIF.getAllTags(this));
 
-                        // 读取设备信息
-                        const make = EXIF.getTag(this, 'Make') || '';
-                        const model = EXIF.getTag(this, 'Model') || '';
+                            // 读取设备信息
+                            const make = EXIF.getTag(this, 'Make') || '';
+                            const model = EXIF.getTag(this, 'Model') || '';
 
-                        console.log('Make:', make);
-                        console.log('Model:', model);
+                            console.log('Make:', make);
+                            console.log('Model:', model);
 
-                        deviceInfo.make = make;
-                        deviceInfo.model = model;
+                            deviceInfo.make = make;
+                            deviceInfo.model = model;
 
-                        // 显示设备信息
-                        if (make || model) {
-                            let deviceText = '';
-                            if (make) deviceText += make;
-                            if (model) {
-                                if (deviceText) deviceText += ' ';
-                                deviceText += model;
+                            // 显示设备信息
+                            if (make || model) {
+                                let deviceText = '';
+                                if (make) deviceText += make;
+                                if (model) {
+                                    if (deviceText) deviceText += ' ';
+                                    deviceText += model;
+                                }
+                                deviceNameSpan.textContent = deviceText.trim();
+                                deviceInfoDiv.classList.add('show');
                             }
-                            deviceNameSpan.textContent = deviceText.trim();
-                            deviceInfoDiv.classList.add('show');
-                        }
 
-                        // 读取拍摄时间
-                        const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
-                        console.log('拍摄时间:', dateTime);
-                        deviceInfo.dateTime = dateTime;
+                            // 读取拍摄时间
+                            const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
+                            console.log('拍摄时间原始值:', dateTime);
+                            deviceInfo.dateTime = dateTime;
 
-                        // 读取GPS信息
-                        const lat = EXIF.getTag(this, 'GPSLatitude');
-                        const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
-                        const lon = EXIF.getTag(this, 'GPSLongitude');
-                        const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
+                            // 读取GPS信息
+                            const lat = EXIF.getTag(this, 'GPSLatitude');
+                            const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+                            const lon = EXIF.getTag(this, 'GPSLongitude');
+                            const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
 
-                        if (lat && lon) {
-                            console.log('GPS原始数据:', lat, latRef, lon, lonRef);
+                            console.log('GPS数据:', { lat, latRef, lon, lonRef });
 
-                            // 转换为十进制度数
-                            const latitude = convertDMSToDD2(lat[0], lat[1], lat[2], latRef);
-                            const longitude = convertDMSToDD2(lon[0], lon[1], lon[2], lonRef);
+                            if (lat && lon && lat.length >= 3 && lon.length >= 3) {
+                                console.log('GPS原始数据:', lat, latRef, lon, lonRef);
 
-                            console.log('GPS坐标:', latitude, longitude);
-                            deviceInfo.gpsLatitude = latitude;
-                            deviceInfo.gpsLongitude = longitude;
+                                // 转换为十进制度数
+                                const latitude = convertDMSToDD2(lat[0], lat[1], lat[2], latRef);
+                                const longitude = convertDMSToDD2(lon[0], lon[1], lon[2], lonRef);
 
-                            // 获取地址
-                            try {
-                                const location = await reverseGeocode(latitude, longitude);
-                                deviceInfo.location = location;
-                                console.log('地址:', location);
-                            } catch (err) {
-                                console.error('地理编码失败:', err);
+                                console.log('GPS坐标:', latitude, longitude);
+                                deviceInfo.gpsLatitude = latitude;
+                                deviceInfo.gpsLongitude = longitude;
+
+                                // 获取地址
+                                try {
+                                    const location = await reverseGeocode(latitude, longitude);
+                                    deviceInfo.location = location;
+                                    console.log('最终地址:', location);
+                                } catch (err) {
+                                    console.error('地理编码失败:', err);
+                                    deviceInfo.location = '';
+                                }
+                            } else {
+                                console.log('没有GPS信息');
                             }
-                        }
 
-                        console.log('最终deviceInfo:', deviceInfo);
-                    });
+                            console.log('最终deviceInfo:', deviceInfo);
+                            resolve();
+                        });
+                    };
                 };
-            };
 
-            reader.readAsDataURL(file);
+                reader.readAsDataURL(file);
+            });
         }
 
         function convertDMSToDD2(degrees, minutes, seconds, direction) {
@@ -556,6 +565,8 @@
             ctx.drawImage(selectedImage, drawX, drawY, drawWidth, drawHeight);
 
             // 准备水印信息
+            console.log('生成水印时的deviceInfo:', deviceInfo);
+
             const deviceText = deviceInfo.make || deviceInfo.model
                 ? `${deviceInfo.make} ${deviceInfo.model}`.trim()
                 : '未知设备';
@@ -563,14 +574,19 @@
             // 格式化拍摄时间
             let dateText = '';
             if (deviceInfo.dateTime) {
+                console.log('原始拍摄时间:', deviceInfo.dateTime);
                 // EXIF格式: "2024:01:30 14:30:25" 转换为 "2024年1月30日"
                 const parts = deviceInfo.dateTime.split(' ')[0].split(':');
                 if (parts.length === 3) {
                     dateText = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                    console.log('格式化后的时间:', dateText);
                 }
+            } else {
+                console.log('没有拍摄时间信息');
             }
 
             const locationText = deviceInfo.location || '';
+            console.log('地址信息:', locationText);
 
             // 构建水印文字数组
             const watermarkLines = [];
@@ -586,6 +602,8 @@
             } else if (locationText) {
                 watermarkLines.push(locationText);
             }
+
+            console.log('最终水印行:', watermarkLines);
 
             // 设置文字样式
             ctx.fillStyle = '#666666';
