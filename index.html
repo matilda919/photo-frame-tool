@@ -693,7 +693,16 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            const deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
+            // 处理设备名称：索尼和富士需要加品牌名
+            let deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
+            if (deviceInfo.make) {
+                const makeUpper = deviceInfo.make.toUpperCase();
+                if (makeUpper.includes('SONY') && deviceInfo.model) {
+                    deviceText = `Sony ${deviceInfo.model}`;
+                } else if ((makeUpper.includes('FUJI') || makeUpper.includes('FUJIFILM')) && deviceInfo.model) {
+                    deviceText = `Fujifilm ${deviceInfo.model}`;
+                }
+            }
 
             // 识别品牌并获取logo
             const brandInfo = getBrandInfo(deviceInfo.make);
@@ -718,15 +727,15 @@
             // 构建水印文字数组
             const watermarkLines = [];
 
-            // 第一行：拍摄者、设备和日期
-            if (dateText) {
-                watermarkLines.push(`${photographer}使用${deviceText}拍摄于${dateText}`);
-            } else {
-                watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
-            }
+            // 第一行：拍摄者和设备
+            watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
 
-            // 第二行：地点
-            if (locationText) {
+            // 第二行：时间和地点
+            if (dateText && locationText) {
+                watermarkLines.push(`${dateText} · ${locationText}`);
+            } else if (dateText) {
+                watermarkLines.push(dateText);
+            } else if (locationText) {
                 watermarkLines.push(locationText);
             }
 
