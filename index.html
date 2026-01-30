@@ -600,9 +600,13 @@
 
         // 处理图片
         function processImage(photographer, customText) {
+            // 根据原图尺寸动态设置画布尺寸，保持高分辨率
+            // 如果原图尺寸小于1080，则使用1080作为基准
+            const baseWidth = Math.max(selectedImage.width, 1080);
+
             // 设置画布尺寸 (9:16 比例)
-            const canvasWidth = 1080;
-            const canvasHeight = 1920;
+            const canvasWidth = baseWidth;
+            const canvasHeight = Math.round(baseWidth * 16 / 9);
 
             previewCanvas.width = canvasWidth;
             previewCanvas.height = canvasHeight;
@@ -611,9 +615,12 @@
             ctx.fillStyle = '#FFFFFF';
             ctx.fillRect(0, 0, canvasWidth, canvasHeight);
 
+            // 根据画布宽度计算比例缩放
+            const scale = canvasWidth / 1080;
+
             // 计算照片区域 (留出上下左右边距和底部水印空间)
-            const padding = 60;
-            const bottomSpace = 120; // 底部留给水印的空间
+            const padding = Math.round(60 * scale);
+            const bottomSpace = Math.round(120 * scale); // 底部留给水印的空间
             const photoAreaWidth = canvasWidth - (padding * 2);
             const photoAreaHeight = canvasHeight - (padding * 2) - bottomSpace;
 
@@ -697,26 +704,30 @@
             const photoBottom = drawY + drawHeight;
             const canvasBottom = canvasHeight - padding;
             const availableSpace = canvasBottom - photoBottom;
-            const lineHeight = 35;
+            const lineHeight = Math.round(35 * scale);
             const totalTextHeight = watermarkLines.length * lineHeight;
 
             // 居中起始位置
             let textY = photoBottom + (availableSpace - totalTextHeight) / 2 + lineHeight / 2;
 
+            // 字体大小随比例缩放
+            const fontSize1 = Math.round(28 * scale);
+            const fontSize2 = Math.round(24 * scale);
+
             // 绘制每一行文字
             watermarkLines.forEach((line, index) => {
                 if (index === 0) {
                     // 第一行：苹果风格字体，较大斜体
-                    ctx.font = 'italic 28px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.font = `italic ${fontSize1}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
                     ctx.fillStyle = '#1d1d1f';
 
                     // 如果有品牌logo图片，绘制logo
                     if (brandInfo.logo) {
                         // 测量文字宽度
                         const textWidth = ctx.measureText(line).width;
-                        const logoHeight = 28; // logo高度
+                        const logoHeight = fontSize1; // logo高度
                         const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height); // 等比例缩放宽度
-                        const spacing = 12; // logo和文字间距
+                        const spacing = Math.round(12 * scale); // logo和文字间距
                         const totalWidth = logoWidth + spacing + textWidth;
 
                         // 计算起始x位置（居中）
@@ -738,12 +749,12 @@
                     }
                 } else if (index === 1) {
                     // 第二行：苹果风格字体，较小斜体
-                    ctx.font = 'italic 24px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
                     ctx.fillStyle = '#86868b';
                     ctx.fillText(line, canvasWidth / 2, textY);
                 } else {
                     // 第三行：自定义文字，使用相同样式
-                    ctx.font = 'italic 24px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
                     ctx.fillStyle = '#86868b';
                     ctx.fillText(line, canvasWidth / 2, textY);
                 }
@@ -790,7 +801,7 @@
                     link.href = URL.createObjectURL(blob);
                     link.click();
                     URL.revokeObjectURL(link.href);
-                }, 'image/jpeg', 0.95);
+                }, 'image/jpeg', 1.0);
             } catch (err) {
                 console.error('下载失败:', err);
                 alert('保存失败，请重试');
