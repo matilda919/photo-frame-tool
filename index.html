@@ -554,26 +554,34 @@
 
                 const data = await response.json();
 
-                // 提取地址信息 - 优先显示城市
+                // 提取地址信息 - 国家+城市
                 const addr = data.address || {};
-                let location = '';
+                let country = addr.country || '';
+                let city = '';
 
-                // 优先显示城市名称（中文）
+                // 优先获取城市名称
                 if (addr.city) {
-                    location = addr.city;
+                    city = addr.city;
                 } else if (addr.town) {
-                    location = addr.town;
+                    city = addr.town;
                 } else if (addr.village) {
-                    location = addr.village;
+                    city = addr.village;
                 } else if (addr.county) {
-                    location = addr.county;
+                    city = addr.county;
                 } else if (addr.state) {
-                    location = addr.state;
-                } else if (addr.country) {
-                    location = addr.country;
+                    city = addr.state;
                 }
 
-                return location || null;
+                // 组合国家+城市
+                if (country && city) {
+                    return `${country}${city}`;
+                } else if (city) {
+                    return city;
+                } else if (country) {
+                    return country;
+                }
+
+                return null;
             } catch (err) {
                 return null;
             }
