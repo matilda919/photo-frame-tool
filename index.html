@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>照片加边框工具</title>
+    <title>边框框</title>
     <!-- EXIF库 -->
     <script src="https://cdn.jsdelivr.net/npm/exif-js"></script>
     <style>
@@ -14,69 +14,94 @@
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background: linear-gradient(135deg, #1c1c1e 0%, #2c2c2e 100%);
             min-height: 100vh;
             padding: 20px;
             display: flex;
             flex-direction: column;
             align-items: center;
+            position: relative;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(circle at 20% 20%, rgba(99, 102, 241, 0.1) 0%, transparent 50%),
+                        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+            pointer-events: none;
+            z-index: 0;
         }
 
         .container {
-            background: white;
-            border-radius: 20px;
-            padding: 30px;
+            background: rgba(28, 28, 30, 0.85);
+            backdrop-filter: blur(20px) saturate(180%);
+            -webkit-backdrop-filter: blur(20px) saturate(180%);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px;
             max-width: 500px;
             width: 100%;
-            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5),
+                        0 0 1px rgba(255, 255, 255, 0.1) inset;
+            position: relative;
+            z-index: 1;
         }
 
         h1 {
             text-align: center;
-            color: #333;
-            margin-bottom: 10px;
-            font-size: 24px;
+            color: #ffffff;
+            margin-bottom: 8px;
+            font-size: 32px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
         }
 
         .subtitle {
             text-align: center;
-            color: #666;
-            font-size: 14px;
-            margin-bottom: 25px;
+            color: rgba(255, 255, 255, 0.6);
+            font-size: 15px;
+            margin-bottom: 30px;
+            font-weight: 400;
         }
 
         .upload-area {
             position: relative;
-            border: 2px dashed #667eea;
-            border-radius: 15px;
-            padding: 40px 20px;
+            border: 2px dashed rgba(99, 102, 241, 0.5);
+            border-radius: 16px;
+            padding: 50px 20px;
             text-align: center;
             cursor: pointer;
-            transition: all 0.3s;
-            background: #f8f9ff;
-            margin-bottom: 20px;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.03);
+            margin-bottom: 24px;
         }
 
         .upload-area:hover {
-            border-color: #5568d3;
-            background: #f0f2ff;
+            border-color: rgba(99, 102, 241, 0.8);
+            background: rgba(99, 102, 241, 0.08);
+            transform: translateY(-2px);
         }
 
         .upload-area.dragover {
-            border-color: #4caf50;
-            background: #e8f5e9;
+            border-color: rgba(16, 185, 129, 0.8);
+            background: rgba(16, 185, 129, 0.1);
         }
 
         .upload-icon {
-            font-size: 48px;
-            margin-bottom: 10px;
+            font-size: 56px;
+            margin-bottom: 12px;
             pointer-events: none;
+            filter: grayscale(20%);
         }
 
         .upload-text {
-            color: #667eea;
-            font-size: 16px;
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 17px;
             font-weight: 500;
             pointer-events: none;
         }
@@ -97,44 +122,56 @@
 
         label {
             display: block;
-            margin-bottom: 8px;
-            color: #333;
+            margin-bottom: 10px;
+            color: rgba(255, 255, 255, 0.9);
             font-weight: 500;
-            font-size: 14px;
+            font-size: 15px;
+            letter-spacing: -0.2px;
         }
 
         input[type="text"] {
             width: 100%;
-            padding: 12px 15px;
-            border: 2px solid #e0e0e0;
-            border-radius: 10px;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            border-radius: 12px;
             font-size: 16px;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.05);
+            color: #ffffff;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(255, 255, 255, 0.3);
         }
 
         input[type="text"]:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: rgba(99, 102, 241, 0.6);
+            background: rgba(255, 255, 255, 0.08);
+            box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
         }
 
         .btn {
             width: 100%;
-            padding: 15px;
-            background: #667eea;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.9) 0%, rgba(139, 92, 246, 0.9) 100%);
             color: white;
             border: none;
-            border-radius: 10px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: all 0.3s ease;
             margin-top: 10px;
+            letter-spacing: -0.2px;
+            box-shadow: 0 4px 16px rgba(99, 102, 241, 0.3);
         }
 
         .btn:hover {
-            background: #5568d3;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 1) 0%, rgba(139, 92, 246, 1) 100%);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 8px 24px rgba(99, 102, 241, 0.4);
         }
 
         .btn:active {
@@ -142,9 +179,11 @@
         }
 
         .btn:disabled {
-            background: #ccc;
+            background: rgba(255, 255, 255, 0.1);
+            color: rgba(255, 255, 255, 0.3);
             cursor: not-allowed;
             transform: none;
+            box-shadow: none;
         }
 
         .preview {
@@ -158,36 +197,39 @@
 
         .preview-title {
             text-align: center;
-            color: #333;
-            margin-bottom: 15px;
+            color: rgba(255, 255, 255, 0.9);
+            margin-bottom: 20px;
             font-weight: 600;
+            font-size: 17px;
         }
 
         #previewCanvas {
             max-width: 100%;
-            border-radius: 10px;
-            box-shadow: 0 5px 20px rgba(0, 0, 0, 0.2);
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.6);
             display: block;
             margin: 0 auto;
         }
 
         .info {
-            background: #fff3cd;
-            border: 1px solid #ffc107;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 20px;
-            font-size: 13px;
-            color: #856404;
+            background: rgba(255, 193, 7, 0.12);
+            border: 1px solid rgba(255, 193, 7, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: rgba(255, 215, 64, 0.95);
+            line-height: 1.5;
         }
 
         .device-info {
-            background: #e8f5e9;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 15px;
-            font-size: 13px;
-            color: #2e7d32;
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: rgba(52, 211, 153, 0.95);
             display: none;
         }
 
@@ -197,9 +239,10 @@
 
         .loading {
             text-align: center;
-            color: #667eea;
-            margin-top: 10px;
+            color: rgba(99, 102, 241, 0.9);
+            margin-top: 12px;
             display: none;
+            font-size: 15px;
         }
 
         .loading.show {
@@ -208,23 +251,23 @@
 
         @media (max-width: 600px) {
             .container {
-                padding: 20px;
+                padding: 28px;
             }
 
             h1 {
-                font-size: 20px;
+                font-size: 28px;
             }
 
             .upload-area {
-                padding: 30px 15px;
+                padding: 40px 20px;
             }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📷 照片加边框工具</h1>
-        <p class="subtitle">为照片添加白色边框和水印</p>
+        <h1>边框框</h1>
+        <p class="subtitle">为照片添加精美边框与水印</p>
 
         <div class="info">
             💡 选择照片后，会自动读取拍摄设备信息（如果有）
@@ -246,8 +289,8 @@
         </div>
 
         <div class="input-group">
-            <label for="customTextInput">第三行文字（可选）</label>
-            <input type="text" id="customTextInput" placeholder="可选填写，例如：活动名称、祝福语等" value="">
+            <label for="customTextInput">记录今天的心情吧~</label>
+            <input type="text" id="customTextInput" placeholder="分享你的心情或想法..." value="">
         </div>
 
         <button class="btn" id="processBtn" disabled>生成照片</button>
