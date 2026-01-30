@@ -465,13 +465,22 @@
                                 deviceInfo.gpsLatitude = latitude;
                                 deviceInfo.gpsLongitude = longitude;
 
-                                // 获取地址，如果失败则显示经纬度
+                                // 格式化经纬度
+                                const coords = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+
+                                // 获取地址，如果成功则附上经纬度
                                 try {
                                     const location = await reverseGeocode(latitude, longitude);
-                                    deviceInfo.location = location || `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+                                    if (location) {
+                                        // 中文地址 + 经纬度
+                                        deviceInfo.location = `${location} (${coords})`;
+                                    } else {
+                                        // 只显示经纬度
+                                        deviceInfo.location = coords;
+                                    }
                                 } catch (err) {
-                                    // API失败时显示经纬度
-                                    deviceInfo.location = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+                                    // API失败时只显示经纬度
+                                    deviceInfo.location = coords;
                                 }
                             }
 
@@ -528,7 +537,7 @@
                 const timeoutId = setTimeout(() => controller.abort(), 5000);
 
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=en`,
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=zh-CN`,
                     {
                         headers: {
                             'User-Agent': 'PhotoFrameTool/1.0'
@@ -549,7 +558,7 @@
                 const addr = data.address || {};
                 let location = '';
 
-                // 优先显示城市名称
+                // 优先显示城市名称（中文）
                 if (addr.city) {
                     location = addr.city;
                 } else if (addr.town) {
