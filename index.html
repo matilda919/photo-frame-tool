@@ -311,7 +311,8 @@
             dateTime: '',
             gpsLatitude: null,
             gpsLongitude: null,
-            location: ''
+            location: '',
+            weather: null
         };
         let brandLogos = {}; // 存储加载的品牌logo图片
         let logosLoaded = false; // 标记logo是否加载完成
@@ -533,6 +534,23 @@
                                     console.log('地址获取失败:', err);
                                     // 保持经纬度显示
                                 });
+
+                                // 查询天气（如果有拍摄日期）
+                                if (dateTime) {
+                                    console.log('开始查询天气...');
+                                    // 将EXIF日期格式 "2024:01:30 14:30:25" 转换为 "2024-01-30"
+                                    const datePart = dateTime.split(' ')[0].replace(/:/g, '-');
+                                    console.log('天气查询日期:', datePart);
+
+                                    getHistoricalWeather(latitude, longitude, datePart).then(weather => {
+                                        console.log('天气查询结果:', weather);
+                                        if (weather) {
+                                            deviceInfo.weather = weather;
+                                        }
+                                    }).catch(err => {
+                                        console.log('天气查询失败:', err);
+                                    });
+                                }
                             } else {
                                 console.log('GPS数据不完整或格式错误');
                             }
@@ -613,6 +631,78 @@
                 return null;
             } catch (err) {
                 console.log('地理编码错误:', err);
+                return null;
+            }
+        }
+
+        // 将天气代码转换为中文描述
+        function getWeatherDescription(weatherCode) {
+            const weatherMap = {
+                0: '晴天',
+                1: '晴到多云',
+                2: '多云',
+                3: '阴天',
+                45: '雾',
+                48: '雾',
+                51: '小雨',
+                53: '中雨',
+                55: '大雨',
+                56: '冻雨',
+                57: '冻雨',
+                61: '小雨',
+                63: '中雨',
+                65: '大雨',
+                66: '冻雨',
+                67: '冻雨',
+                71: '小雪',
+                73: '中雪',
+                75: '大雪',
+                77: '雪',
+                80: '阵雨',
+                81: '阵雨',
+                82: '大阵雨',
+                85: '阵雪',
+                86: '阵雪',
+                95: '雷暴',
+                96: '雷暴',
+                99: '雷暴'
+            };
+            return weatherMap[weatherCode] || '未知';
+        }
+
+        // 查询历史天气（使用免费的Open-Meteo API）
+        async function getHistoricalWeather(lat, lon, date) {
+            try {
+                // date格式应该是 "YYYY-MM-DD"
+                const response = await fetch(
+                    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`
+                );
+
+                if (!response.ok) {
+                    console.log('天气API请求失败:', response.status);
+                    return null;
+                }
+
+                const data = await response.json();
+                console.log('天气API返回数据:', data);
+
+                if (data.daily && data.daily.weathercode && data.daily.weathercode.length > 0) {
+                    const weatherCode = data.daily.weathercode[0];
+                    const tempMax = data.daily.temperature_2m_max[0];
+                    const tempMin = data.daily.temperature_2m_min[0];
+
+                    const weatherDesc = getWeatherDescription(weatherCode);
+                    const avgTemp = Math.round((tempMax + tempMin) / 2);
+
+                    return {
+                        description: weatherDesc,
+                        temperature: avgTemp
+                    };
+                }
+
+                return null;
+            } catch (err) {
+                console.log('天气查询错误:', err);
                 return null;
             }
         }
@@ -730,13 +820,28 @@
             // 第一行：拍摄者和设备
             watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
 
-            // 第二行：时间和地点
+            // 第二行：时间和地点和天气
+            let secondLine = '';
             if (dateText && locationText) {
-                watermarkLines.push(`${dateText} · ${locationText}`);
+                secondLine = `${dateText} · ${locationText}`;
             } else if (dateText) {
-                watermarkLines.push(dateText);
+                secondLine = dateText;
             } else if (locationText) {
-                watermarkLines.push(locationText);
+                secondLine = locationText;
+            }
+
+            // 添加天气信息到第二行末尾
+            if (deviceInfo.weather) {
+                const weatherText = `${deviceInfo.weather.description} ${deviceInfo.weather.temperature}°C`;
+                if (secondLine) {
+                    secondLine += ` · ${weatherText}`;
+                } else {
+                    secondLine = weatherText;
+                }
+            }
+
+            if (secondLine) {
+                watermarkLines.push(secondLine);
             }
 
             // 第三行：自定义文字（如果用户填写了）
