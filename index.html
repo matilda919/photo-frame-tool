@@ -922,7 +922,8 @@
 
             // 计算照片区域 (留出上下左右边距和底部水印空间)
             const padding = Math.round(60 * scale);
-            const bottomSpace = Math.round(120 * scale); // 底部留给水印的空间
+            // 1:1画面需要更多底部空间，因为空间更紧凑
+            const bottomSpace = ratio === '1:1' ? Math.round(180 * scale) : Math.round(120 * scale);
             const photoAreaWidth = canvasWidth - (padding * 2);
             const photoAreaHeight = canvasHeight - (padding * 2) - bottomSpace;
 
@@ -1032,20 +1033,20 @@
                 // 根据画面比例和品牌设置不同的logo高度
                 let logoHeight = Math.round(50 * scale); // 默认logo高度
 
-                // 1:1画面比例时，减小logo尺寸以避免与水印重叠
+                // 1:1画面比例时，大幅减小logo尺寸以避免与水印重叠
                 if (ratio === '1:1') {
-                    logoHeight = Math.round(35 * scale);
+                    logoHeight = Math.round(25 * scale);
                 }
 
                 // Leica和Fujifilm的logo需要更大
                 if (brandInfo.logoKey === 'leica') {
-                    logoHeight = ratio === '1:1' ? Math.round(60 * scale) : Math.round(120 * scale);
+                    logoHeight = ratio === '1:1' ? Math.round(45 * scale) : Math.round(120 * scale);
                 } else if (brandInfo.logoKey === 'fujifilm') {
-                    logoHeight = ratio === '1:1' ? Math.round(50 * scale) : Math.round(100 * scale);
+                    logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(100 * scale);
                 }
 
                 // 根据画面比例调整logo位置
-                const logoYOffset = ratio === '1:1' ? Math.round(25 * scale) : Math.round(45 * scale);
+                const logoYOffset = ratio === '1:1' ? Math.round(30 * scale) : Math.round(45 * scale);
                 const logoY = photoBottom + logoYOffset;
 
                 // 计算logo宽度（保持宽高比）
