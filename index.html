@@ -509,8 +509,8 @@
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
-            // 在底部居中绘制文字
-            const textY = canvasHeight - bottomSpace / 2 - 10;
+            // 在照片下方居中绘制文字
+            const textY = drawY + drawHeight + 40; // 照片底部 + 40像素间距
             ctx.fillText(watermarkText, canvasWidth / 2, textY);
 
             // 显示预览
