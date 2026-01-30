@@ -693,9 +693,7 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            const deviceText = deviceInfo.make || deviceInfo.model
-                ? `${deviceInfo.make} ${deviceInfo.model}`.trim()
-                : '未知设备';
+            const deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
 
             // 识别品牌并获取logo
             const brandInfo = getBrandInfo(deviceInfo.make);
