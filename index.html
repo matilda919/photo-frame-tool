@@ -718,15 +718,15 @@
             // 构建水印文字数组
             const watermarkLines = [];
 
-            // 第一行：拍摄者和设备
-            watermarkLines.push(`${photographer}用${deviceText}拍摄`);
+            // 第一行：拍摄者、设备和日期
+            if (dateText) {
+                watermarkLines.push(`${photographer}使用${deviceText}拍摄于${dateText}`);
+            } else {
+                watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
+            }
 
-            // 第二行：时间和地点
-            if (dateText && locationText) {
-                watermarkLines.push(`${dateText} · ${locationText}`);
-            } else if (dateText) {
-                watermarkLines.push(dateText);
-            } else if (locationText) {
+            // 第二行：地点
+            if (locationText) {
                 watermarkLines.push(locationText);
             }
 
