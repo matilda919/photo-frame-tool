@@ -248,12 +248,6 @@
         <button class="btn" id="processBtn" disabled>生成照片</button>
         <div class="loading" id="loading">⏳ 正在处理...</div>
 
-        <!-- 调试信息面板 -->
-        <div style="background: #f0f0f0; padding: 15px; margin-top: 20px; border-radius: 10px; font-size: 12px; max-height: 200px; overflow-y: auto;">
-            <div style="font-weight: bold; margin-bottom: 10px;">🔍 调试信息</div>
-            <div id="debugInfo" style="font-family: monospace; white-space: pre-wrap; color: #333;"></div>
-        </div>
-
         <div class="preview" id="preview">
             <div class="preview-title">✨ 预览效果</div>
             <canvas id="previewCanvas"></canvas>
@@ -262,13 +256,6 @@
     </div>
 
     <script>
-        // 调试信息输出函数
-        function debugLog(message) {
-            const debugInfo = document.getElementById('debugInfo');
-            const time = new Date().toLocaleTimeString();
-            debugInfo.textContent += `[${time}] ${message}\n`;
-            console.log(message);
-        }
         let selectedImage = null;
         let deviceInfo = {
             make: '',
@@ -300,37 +287,29 @@
                     img.onload = () => {
                         brandLogos[brand] = img;
                         loadedCount++;
-                        debugLog(`${brand} logo加载成功，尺寸: ${img.width}x${img.height}`);
 
                         if (loadedCount === totalCount) {
                             logosLoaded = true;
-                            debugLog('✅ 所有logo加载完成！');
-                            debugLog(`已加载的品牌: ${Object.keys(brandLogos).join(', ')}`);
                             resolve();
                         }
                     };
 
                     img.onerror = (e) => {
                         loadedCount++;
-                        debugLog(`❌ ${brand} logo加载失败: ${logoFiles[brand]}`);
 
                         if (loadedCount === totalCount) {
                             logosLoaded = true;
-                            debugLog('Logo加载完成（部分失败）');
                             resolve();
                         }
                     };
 
                     img.src = logoFiles[brand];
-                    debugLog(`开始加载 ${brand} logo: ${logoFiles[brand]}`);
                 });
             });
         }
 
         // 页面加载时预加载logo
-        loadBrandLogos().then(() => {
-            debugLog('Logo预加载完成，可以开始使用');
-        });
+        loadBrandLogos();
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -666,12 +645,6 @@
 
             // 识别品牌并获取logo
             const brandInfo = getBrandInfo(deviceInfo.make);
-            debugLog(`设备品牌: ${deviceInfo.make}`);
-            debugLog(`识别的品牌Key: ${brandInfo.logoKey || '无'}`);
-            debugLog(`Logo对象存在: ${brandInfo.logo ? '是' : '否'}`);
-            if (brandInfo.logo) {
-                debugLog(`Logo尺寸: ${brandInfo.logo.width}x${brandInfo.logo.height}`);
-            }
 
             // 格式化拍摄时间
             let dateText = '';
