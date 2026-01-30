@@ -265,6 +265,32 @@
             gpsLongitude: null,
             location: ''
         };
+        let brandLogos = {}; // 存储加载的品牌logo图片
+
+        // 预加载品牌logo图片
+        function loadBrandLogos() {
+            const logoFiles = {
+                'apple': 'logos/Apple-Logo.png',
+                'fujifilm': 'logos/Fujifilm-logo.png',
+                'leica': 'logos/Leica-Logo.png'
+            };
+
+            Object.keys(logoFiles).forEach(brand => {
+                const img = new Image();
+                img.crossOrigin = 'anonymous';
+                img.onload = () => {
+                    brandLogos[brand] = img;
+                    console.log(`${brand} logo加载成功`);
+                };
+                img.onerror = () => {
+                    console.log(`${brand} logo加载失败`);
+                };
+                img.src = logoFiles[brand];
+            });
+        }
+
+        // 页面加载时预加载logo
+        loadBrandLogos();
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
@@ -454,6 +480,33 @@
             return dd;
         }
 
+        // 识别相机品牌并返回logo信息
+        function getBrandInfo(make) {
+            if (!make) return { logo: null, color: '#333' };
+
+            const makeUpper = make.toUpperCase();
+
+            // 品牌映射表
+            const brandMap = {
+                'APPLE': 'apple',
+                'FUJIFILM': 'fujifilm',
+                'FUJI': 'fujifilm',
+                'LEICA': 'leica'
+            };
+
+            for (const [brand, logoKey] of Object.entries(brandMap)) {
+                if (makeUpper.includes(brand)) {
+                    return {
+                        logo: brandLogos[logoKey] || null,
+                        logoKey: logoKey,
+                        color: '#000000'
+                    };
+                }
+            }
+
+            return { logo: null, color: '#333' };
+        }
+
         // 反向地理编码（使用免费的nominatim服务）
         async function reverseGeocode(lat, lon) {
             try {
@@ -571,6 +624,10 @@
                 ? `${deviceInfo.make} ${deviceInfo.model}`.trim()
                 : '未知设备';
 
+            // 识别品牌并获取logo
+            const brandInfo = getBrandInfo(deviceInfo.make);
+            console.log('品牌信息:', brandInfo);
+
             // 格式化拍摄时间
             let dateText = '';
             if (deviceInfo.dateTime) {
@@ -605,9 +662,7 @@
 
             console.log('最终水印行:', watermarkLines);
 
-            // 设置文字样式
-            ctx.fillStyle = '#666666';
-            ctx.font = '20px -apple-system, sans-serif';
+            // 设置文字样式基础属性
             ctx.textAlign = 'center';
             ctx.textBaseline = 'middle';
 
@@ -615,7 +670,7 @@
             const photoBottom = drawY + drawHeight;
             const canvasBottom = canvasHeight - padding;
             const availableSpace = canvasBottom - photoBottom;
-            const lineHeight = 30;
+            const lineHeight = 35;
             const totalTextHeight = watermarkLines.length * lineHeight;
 
             // 居中起始位置
@@ -624,15 +679,42 @@
             // 绘制每一行文字
             watermarkLines.forEach((line, index) => {
                 if (index === 0) {
-                    // 第一行：较大斜体
-                    ctx.font = 'italic 26px -apple-system, sans-serif';
-                    ctx.fillStyle = '#333333';
+                    // 第一行：苹果风格字体，较大斜体
+                    ctx.font = 'italic 28px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.fillStyle = '#1d1d1f';
+
+                    // 如果有品牌logo图片，绘制logo
+                    if (brandInfo.logo) {
+                        // 测量文字宽度
+                        const textWidth = ctx.measureText(line).width;
+                        const logoHeight = 28; // logo高度
+                        const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height); // 等比例缩放宽度
+                        const spacing = 12; // logo和文字间距
+                        const totalWidth = logoWidth + spacing + textWidth;
+
+                        // 计算起始x位置（居中）
+                        const startX = (canvasWidth - totalWidth) / 2;
+
+                        // 绘制logo图片
+                        ctx.save();
+                        const logoY = textY - logoHeight / 2; // 垂直居中
+                        ctx.drawImage(brandInfo.logo, startX, logoY, logoWidth, logoHeight);
+                        ctx.restore();
+
+                        // 绘制文字（在logo右侧）
+                        ctx.textAlign = 'left';
+                        ctx.fillText(line, startX + logoWidth + spacing, textY);
+                        ctx.textAlign = 'center'; // 恢复居中
+                    } else {
+                        // 没有logo，直接居中绘制文字
+                        ctx.fillText(line, canvasWidth / 2, textY);
+                    }
                 } else {
-                    // 第二行：较小斜体
-                    ctx.font = 'italic 22px -apple-system, sans-serif';
-                    ctx.fillStyle = '#888888';
+                    // 第二行：苹果风格字体，较小斜体
+                    ctx.font = 'italic 24px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif';
+                    ctx.fillStyle = '#86868b';
+                    ctx.fillText(line, canvasWidth / 2, textY);
                 }
-                ctx.fillText(line, canvasWidth / 2, textY);
                 textY += lineHeight;
             });
 
