@@ -448,39 +448,45 @@
         // 反向地理编码（使用免费的nominatim服务）
         async function reverseGeocode(lat, lon) {
             try {
+                console.log('开始地理编码:', lat, lon);
                 const response = await fetch(
-                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=18&addressdetails=1`,
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=zh-CN`,
                     {
                         headers: {
                             'User-Agent': 'PhotoFrameTool/1.0'
                         }
                     }
                 );
-                const data = await response.json();
 
-                // 提取有用的地址信息
+                if (!response.ok) {
+                    console.error('API响应错误:', response.status);
+                    return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
+                }
+
+                const data = await response.json();
+                console.log('地理编码返回数据:', data);
+
+                // 提取地址信息
                 const addr = data.address || {};
                 let location = '';
 
-                if (addr.country === 'China' || addr.country === '中国') {
-                    // 中文地址格式
-                    if (addr.city) location += addr.city;
-                    else if (addr.county) location += addr.county;
-                    else if (addr.state) location += addr.state;
-
-                    if (addr.suburb) location += addr.suburb;
-                    if (addr.road) location += addr.road;
-                } else {
-                    // 英文地址格式
-                    if (addr.road) location += addr.road + ', ';
-                    if (addr.city) location += addr.city;
-                    else if (addr.town) location += addr.town;
-                    else if (addr.village) location += addr.village;
+                // 优先显示：市/县级地址
+                if (addr.city) {
+                    location = addr.city;
+                } else if (addr.county) {
+                    location = addr.county;
+                } else if (addr.town) {
+                    location = addr.town;
+                } else if (addr.state || addr.province) {
+                    location = addr.state || addr.province;
+                } else if (addr.country) {
+                    location = addr.country;
                 }
 
+                console.log('解析的地址:', location);
                 return location || `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
             } catch (err) {
-                console.error('地理编码API错误:', err);
+                console.error('地理编码错误:', err);
                 return `${lat.toFixed(4)}, ${lon.toFixed(4)}`;
             }
         }
@@ -600,12 +606,12 @@
             // 绘制每一行文字
             watermarkLines.forEach((line, index) => {
                 if (index === 0) {
-                    // 第一行稍大一些
-                    ctx.font = '22px -apple-system, sans-serif';
+                    // 第一行：较大斜体
+                    ctx.font = 'italic 26px -apple-system, sans-serif';
                     ctx.fillStyle = '#333333';
                 } else {
-                    // 第二行小一些，颜色浅一些
-                    ctx.font = '18px -apple-system, sans-serif';
+                    // 第二行：较小斜体
+                    ctx.font = 'italic 22px -apple-system, sans-serif';
                     ctx.fillStyle = '#888888';
                 }
                 ctx.fillText(line, canvasWidth / 2, textY);
