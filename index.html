@@ -775,12 +775,39 @@
         }
 
         // 下载照片
-        downloadBtn.addEventListener('click', () => {
-            const link = document.createElement('a');
-            const timestamp = new Date().getTime();
-            link.download = `photo_with_frame_${timestamp}.jpg`;
-            link.href = previewCanvas.toDataURL('image/jpeg', 0.95);
-            link.click();
+        downloadBtn.addEventListener('click', async () => {
+            try {
+                // 转换为Blob对象
+                previewCanvas.toBlob(async (blob) => {
+                    // 检测是否支持 Web Share API（iOS Safari支持）
+                    if (navigator.share && navigator.canShare) {
+                        try {
+                            const file = new File([blob], `photo_${new Date().getTime()}.jpg`, { type: 'image/jpeg' });
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: '照片加边框',
+                                    text: '保存照片到相册'
+                                });
+                                return;
+                            }
+                        } catch (err) {
+                            console.log('Share API failed:', err);
+                        }
+                    }
+
+                    // 降级方案：传统下载方式
+                    const link = document.createElement('a');
+                    const timestamp = new Date().getTime();
+                    link.download = `photo_with_frame_${timestamp}.jpg`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }, 'image/jpeg', 0.95);
+            } catch (err) {
+                console.error('下载失败:', err);
+                alert('保存失败，请重试');
+            }
         });
     </script>
 </body>
