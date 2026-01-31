@@ -1025,61 +1025,55 @@
             // 获取品牌logo信息
             const brandInfo = getBrandInfo(deviceInfo.make);
 
+            // 设置文字样式基础属性
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 字体大小随比例缩放
+            const fontSize1 = Math.round(28 * scale);
+            const fontSize2 = Math.round(24 * scale);
+            const lineHeight = Math.round(35 * scale);
+
+            // 为每个品牌设置统一的logo高度（不再区分画面比例）
+            let logoHeight = Math.round(50 * scale);
+            if (brandInfo.logoKey === 'leica') {
+                logoHeight = Math.round(50 * scale);
+            } else if (brandInfo.logoKey === 'fujifilm') {
+                logoHeight = Math.round(65 * scale);
+            } else if (brandInfo.logoKey === 'sony') {
+                logoHeight = Math.round(55 * scale);
+            } else if (brandInfo.logoKey === 'ricoh') {
+                logoHeight = Math.round(45 * scale);
+            } else if (brandInfo.logoKey === 'apple') {
+                logoHeight = Math.round(50 * scale);
+            }
+
+            // 计算水印整体高度（logo + 间距 + 文字）
+            const logoTextGap = Math.round(20 * scale); // logo和文字之间的间距
+            const totalTextHeight = watermarkLines.length * lineHeight;
+            const watermarkTotalHeight = (brandInfo.logo ? logoHeight + logoTextGap : 0) + totalTextHeight;
+
+            // 水印整体在底部空间居中
+            const watermarkStartY = photoBottom + (availableSpace - watermarkTotalHeight) / 2;
+
             // 如果有品牌logo图片，在照片下方绘制
             if (brandInfo.logo) {
-                // 根据画面比例和品牌设置不同的logo高度
-                let logoHeight = Math.round(50 * scale); // 默认logo高度
-
-                // 1:1画面比例时，大幅减小logo尺寸以避免与水印重叠
-                if (ratio === '1:1') {
-                    logoHeight = Math.round(25 * scale);
-                }
-
-                // 为每个品牌设置合适的logo高度
-                if (brandInfo.logoKey === 'leica') {
-                    logoHeight = ratio === '1:1' ? Math.round(25 * scale) : Math.round(60 * scale);
-                } else if (brandInfo.logoKey === 'fujifilm') {
-                    logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(80 * scale);
-                } else if (brandInfo.logoKey === 'sony') {
-                    logoHeight = ratio === '1:1' ? Math.round(30 * scale) : Math.round(70 * scale);
-                } else if (brandInfo.logoKey === 'ricoh') {
-                    logoHeight = ratio === '1:1' ? Math.round(28 * scale) : Math.round(55 * scale);
-                } else if (brandInfo.logoKey === 'apple') {
-                    logoHeight = ratio === '1:1' ? Math.round(30 * scale) : Math.round(60 * scale);
-                }
-
-                // 根据画面比例调整logo位置
-                const logoYOffset = ratio === '1:1' ? Math.round(30 * scale) : Math.round(45 * scale);
-                const logoY = photoBottom + logoYOffset;
-
                 // 计算logo宽度（保持宽高比）
                 const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height);
 
-                // SVG logo需要特殊处理（设置透明度和颜色）
                 ctx.save();
                 ctx.globalAlpha = 1.0; // 完全不透明
 
                 // 居中绘制logo
                 const logoX = (canvasWidth - logoWidth) / 2;
+                const logoY = watermarkStartY + logoHeight / 2;
                 ctx.drawImage(brandInfo.logo, logoX, logoY - logoHeight / 2, logoWidth, logoHeight);
 
                 ctx.restore();
             }
 
-            // 设置文字样式基础属性
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-
-            // 计算水印位置：照片底部和白边框底部的中间
-            const lineHeight = Math.round(35 * scale);
-            const totalTextHeight = watermarkLines.length * lineHeight;
-
-            // 居中起始位置
-            let textY = photoBottom + (availableSpace - totalTextHeight) / 2 + lineHeight / 2;
-
-            // 字体大小随比例缩放
-            const fontSize1 = Math.round(28 * scale);
-            const fontSize2 = Math.round(24 * scale);
+            // 计算文字起始位置（紧跟logo下方）
+            let textY = watermarkStartY + (brandInfo.logo ? logoHeight + logoTextGap : 0) + lineHeight / 2;
 
             // 绘制每一行文字
             watermarkLines.forEach((line, index) => {
@@ -1208,3 +1202,5 @@
 </body>
 </html>
 
+
+    
