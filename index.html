@@ -102,3 +102,1102 @@
         }
 
         @keyframes bounce {
+            0%, 100% {
+                transform: translateY(0) rotate(0deg);
+            }
+            25% {
+                transform: translateY(-10px) rotate(-3deg);
+            }
+            50% {
+                transform: translateY(0) rotate(0deg);
+            }
+            75% {
+                transform: translateY(-5px) rotate(3deg);
+            }
+        }
+
+        .upload-icon.success {
+            animation: celebrate 0.6s ease-out;
+        }
+
+        @keyframes celebrate {
+            0% {
+                transform: scale(1) rotate(0deg);
+            }
+            25% {
+                transform: scale(1.2) rotate(-10deg);
+            }
+            50% {
+                transform: scale(1.1) rotate(10deg);
+            }
+            75% {
+                transform: scale(1.15) rotate(-5deg);
+            }
+            100% {
+                transform: scale(1) rotate(0deg);
+            }
+        }
+
+        .upload-text {
+            color: rgba(61, 46, 31, 0.75);
+            font-size: 15px;
+            font-weight: 500;
+            pointer-events: none;
+        }
+
+        input[type="file"] {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            top: 0;
+            left: 0;
+            opacity: 0;
+            cursor: pointer;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 10px;
+            color: rgba(61, 46, 31, 0.9);
+            font-weight: 500;
+            font-size: 15px;
+            letter-spacing: -0.2px;
+            text-align: center;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 180, 80, 0.25);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: rgba(255, 250, 240, 0.8);
+            color: #3D2E1F;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+        }
+
+        input[type="text"]::placeholder {
+            color: rgba(61, 46, 31, 0.4);
+        }
+
+        input[type="text"]:focus {
+            outline: none;
+            border-color: rgba(255, 160, 50, 0.6);
+            background: rgba(255, 250, 245, 1);
+            box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.15);
+        }
+
+        select {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid rgba(255, 180, 80, 0.25);
+            border-radius: 12px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            background: rgba(255, 250, 240, 0.8);
+            color: #3D2E1F;
+            font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", sans-serif;
+            cursor: pointer;
+        }
+
+        select:focus {
+            outline: none;
+            border-color: rgba(255, 160, 50, 0.6);
+            background: rgba(255, 250, 245, 1);
+            box-shadow: 0 0 0 4px rgba(255, 200, 87, 0.15);
+        }
+
+        select option {
+            background: #FFFAF0;
+            color: #3D2E1F;
+        }
+
+        .options-row {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .file-size-info {
+            text-align: center;
+            color: rgba(61, 46, 31, 0.7);
+            font-size: 14px;
+            margin: 15px 0;
+            padding: 10px;
+            background: rgba(255, 245, 220, 0.6);
+            border-radius: 8px;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(255, 160, 50, 0.95) 0%, rgba(255, 140, 30, 0.95) 100%);
+            color: white;
+            border: none;
+            border-radius: 12px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-top: 10px;
+            letter-spacing: -0.2px;
+            box-shadow: 0 4px 16px rgba(255, 160, 50, 0.3);
+        }
+
+        .btn:hover {
+            background: linear-gradient(135deg, rgba(255, 160, 50, 1) 0%, rgba(255, 140, 30, 1) 100%);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(255, 160, 50, 0.4);
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .btn:disabled {
+            background: rgba(200, 180, 150, 0.3);
+            color: rgba(61, 46, 31, 0.4);
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .preview {
+            margin-top: 30px;
+            display: none;
+        }
+
+        .preview.show {
+            display: block;
+        }
+
+        .preview-title {
+            text-align: center;
+            color: rgba(61, 46, 31, 0.9);
+            margin-bottom: 20px;
+            font-weight: 600;
+            font-size: 17px;
+        }
+
+        #previewCanvas {
+            max-width: 100%;
+            border-radius: 12px;
+            box-shadow: 0 8px 32px rgba(255, 160, 50, 0.2);
+            display: block;
+            margin: 0 auto;
+        }
+
+        .info {
+            background: rgba(255, 220, 150, 0.3);
+            border: 1px solid rgba(255, 180, 80, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 24px;
+            font-size: 14px;
+            color: rgba(61, 46, 31, 0.8);
+            line-height: 1.5;
+        }
+
+        .device-info {
+            background: rgba(255, 235, 200, 0.5);
+            border: 1px solid rgba(255, 180, 80, 0.3);
+            border-radius: 12px;
+            padding: 14px 16px;
+            margin-bottom: 20px;
+            font-size: 14px;
+            color: rgba(61, 46, 31, 0.8);
+            display: none;
+        }
+
+        .device-info.show {
+            display: block;
+        }
+
+        .loading {
+            text-align: center;
+            color: rgba(255, 140, 30, 0.9);
+            margin-top: 12px;
+            display: none;
+            font-size: 15px;
+        }
+
+        .loading.show {
+            display: block;
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 28px;
+            }
+
+            h1 {
+                font-size: 28px;
+            }
+
+            .upload-area {
+                padding: 40px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>框框边</h1>
+        <p class="subtitle">给你的照片记忆加个相框~</p>
+
+        <div class="upload-area" id="uploadArea">
+            <img class="upload-icon" id="uploadIcon" src="https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/waiting.png" alt="上传图标">
+            <div class="upload-text">点击上传照片</div>
+            <input type="file" id="fileInput" accept="image/*">
+        </div>
+
+        <div class="device-info" id="deviceInfo">
+            📱 检测到设备：<span id="deviceName">未知</span>
+        </div>
+
+        <div class="input-group">
+            <label for="photographerInput">谁是摄影师？</label>
+            <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
+        </div>
+
+        <div class="input-group">
+            <label for="customTextInput">记录今天的心情吧~</label>
+            <input type="text" id="customTextInput" placeholder="分享你的心情或想法..." value="">
+        </div>
+
+        <div class="options-row">
+            <div class="input-group" style="flex: 1; margin-right: 10px;">
+                <label for="ratioSelect">画面比例</label>
+                <select id="ratioSelect">
+                    <option value="9:16" selected>9:16 竖版</option>
+                    <option value="1:1">1:1 方形</option>
+                </select>
+            </div>
+
+            <div class="input-group" style="flex: 1; margin-left: 10px;">
+                <label for="qualitySelect">导出画质</label>
+                <select id="qualitySelect">
+                    <option value="high" selected>高 (~3-5MB)</option>
+                    <option value="medium">中 (~1-2MB)</option>
+                    <option value="low">低 (~0.5-1MB)</option>
+                </select>
+            </div>
+        </div>
+
+        <button class="btn" id="processBtn" disabled>生成照片</button>
+        <div class="loading" id="loading">⏳ 正在处理...</div>
+
+        <div class="preview" id="preview">
+            <div class="preview-title">✨ 预览效果</div>
+            <canvas id="previewCanvas"></canvas>
+            <div class="file-size-info" id="fileSizeInfo">预估文件大小：计算中...</div>
+            <button class="btn" id="downloadBtn">下载照片</button>
+        </div>
+    </div>
+
+    <script>
+        let selectedImage = null;
+        let deviceInfo = {
+            make: '',
+            model: '',
+            dateTime: '',
+            gpsLatitude: null,
+            gpsLongitude: null,
+            location: '',
+            weather: null
+        };
+        let brandLogos = {}; // 存储加载的品牌logo图片
+        let logosLoaded = false; // 标记logo是否加载完成
+
+        // 预加载品牌logo图片（使用可靠的CDN）
+        function loadBrandLogos() {
+            return new Promise((resolve) => {
+                // 使用GitHub仓库中的logo文件
+                const logoUrls = {
+                    'apple': [
+                        'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/Apple.png'
+                    ],
+                    'sony': [
+                        'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/Sony.png'
+                    ],
+                    'fujifilm': [
+                        'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/fujifilm.png'
+                    ],
+                    'ricoh': [
+                        'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/ricoh.png'
+                    ],
+                    'canon': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/canon.svg',
+                        'https://www.vectorlogo.zone/logos/canon/canon-icon.svg'
+                    ],
+                    'nikon': [
+                        'https://cdn.jsdelivr.net/gh/simple-icons/simple-icons/icons/nikon.svg',
+                        'https://www.vectorlogo.zone/logos/nikon/nikon-icon.svg'
+                    ],
+                    'leica': [
+                        'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/Leica.png'
+                    ]
+                };
+
+                let loadedCount = 0;
+                const totalCount = Object.keys(logoUrls).length;
+
+                Object.keys(logoUrls).forEach(brand => {
+                    const urls = logoUrls[brand];
+                    let urlIndex = 0;
+
+                    const tryLoadImage = () => {
+                        if (urlIndex >= urls.length) {
+                            // 所有URL都失败了
+                            console.log(`Logo加载失败（所有URL尝试完毕）: ${brand}`);
+                            loadedCount++;
+                            if (loadedCount === totalCount) {
+                                logosLoaded = true;
+                                resolve();
+                            }
+                            return;
+                        }
+
+                        const img = new Image();
+                        img.crossOrigin = 'anonymous';
+
+                        img.onload = () => {
+                            brandLogos[brand] = img;
+                            loadedCount++;
+                            console.log(`Logo加载成功: ${brand} (URL ${urlIndex + 1})`);
+
+                            if (loadedCount === totalCount) {
+                                logosLoaded = true;
+                                console.log('所有logo加载完成');
+                                resolve();
+                            }
+                        };
+
+                        img.onerror = (e) => {
+                            console.log(`Logo加载失败: ${brand} (URL ${urlIndex + 1})`, e);
+                            urlIndex++;
+                            tryLoadImage(); // 尝试下一个URL
+                        };
+
+                        img.src = urls[urlIndex];
+                    };
+
+                    tryLoadImage();
+                });
+            });
+        }
+
+        // 页面加载时预加载logo
+        loadBrandLogos();
+
+        const uploadArea = document.getElementById('uploadArea');
+        const fileInput = document.getElementById('fileInput');
+        const photographerInput = document.getElementById('photographerInput');
+        const customTextInput = document.getElementById('customTextInput');
+        const ratioSelect = document.getElementById('ratioSelect');
+        const qualitySelect = document.getElementById('qualitySelect');
+        const processBtn = document.getElementById('processBtn');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const preview = document.getElementById('preview');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const deviceInfoDiv = document.getElementById('deviceInfo');
+        const deviceNameSpan = document.getElementById('deviceName');
+        const loading = document.getElementById('loading');
+        const fileSizeInfo = document.getElementById('fileSizeInfo');
+        const ctx = previewCanvas.getContext('2d');
+
+        // 拖拽上传
+        uploadArea.addEventListener('dragover', (e) => {
+            e.preventDefault();
+            uploadArea.classList.add('dragover');
+        });
+
+        uploadArea.addEventListener('dragleave', () => {
+            uploadArea.classList.remove('dragover');
+        });
+
+        uploadArea.addEventListener('drop', (e) => {
+            e.preventDefault();
+            uploadArea.classList.remove('dragover');
+            const files = e.dataTransfer.files;
+            if (files.length > 0) {
+                handleFile(files[0]);
+            }
+        });
+
+        // 文件选择
+        fileInput.addEventListener('change', (e) => {
+            console.log('文件选择事件触发', e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 添加input事件作为备用
+        fileInput.addEventListener('input', (e) => {
+            console.log('input事件触发', e.target.files);
+            if (e.target.files && e.target.files.length > 0) {
+                handleFile(e.target.files[0]);
+            }
+        });
+
+        // 处理文件
+        function handleFile(file) {
+            console.log('handleFile被调用', file);
+
+            if (!file) {
+                console.log('文件为空');
+                return;
+            }
+
+            if (!file.type.startsWith('image/')) {
+                alert('请选择图片文件！');
+                console.log('文件类型不正确:', file.type);
+                return;
+            }
+
+            console.log('开始读取文件');
+            const reader = new FileReader();
+
+            reader.onerror = (error) => {
+                console.error('文件读取错误:', error);
+                alert('文件读取失败，请重试');
+            };
+
+            reader.onload = (e) => {
+                console.log('文件读取完成');
+                const img = new Image();
+
+                img.onerror = (error) => {
+                    console.error('图片加载错误:', error);
+                    alert('图片加载失败，请重试');
+                };
+
+                img.onload = () => {
+                    console.log('图片加载成功', img.width, img.height);
+                    selectedImage = img;
+                    const uploadIcon = document.getElementById('uploadIcon');
+                    const uploadText = uploadArea.querySelector('.upload-text');
+
+                    // 更换为可爱的成功图标
+                    uploadIcon.src = 'https://raw.githubusercontent.com/matilda919/photo-frame-tool/main/images/success.png';
+                    uploadIcon.classList.add('success');
+                    uploadText.textContent = '照片已选择';
+
+                    processBtn.disabled = false;
+                    console.log('按钮已启用');
+
+                    // 读取EXIF信息
+                    readExifData(file);
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        // 读取EXIF信息（使用exif-js库，修复版）
+        function readExifData(file) {
+            return new Promise((resolve) => {
+                console.log('开始读取EXIF信息');
+
+                const img = new Image();
+                const reader = new FileReader();
+
+                reader.onload = function(e) {
+                    img.src = e.target.result;
+
+                    img.onload = function() {
+                        EXIF.getData(img, async function() {
+                            console.log('EXIF数据读取完成');
+                            console.log('所有EXIF标签:', EXIF.getAllTags(this));
+
+                            // 读取设备信息
+                            const make = EXIF.getTag(this, 'Make') || '';
+                            const model = EXIF.getTag(this, 'Model') || '';
+
+                            console.log('Make:', make);
+                            console.log('Model:', model);
+
+                            deviceInfo.make = make;
+                            deviceInfo.model = model;
+
+                            // 显示设备信息
+                            if (make || model) {
+                                let deviceText = '';
+                                if (make) deviceText += make;
+                                if (model) {
+                                    if (deviceText) deviceText += ' ';
+                                    deviceText += model;
+                                }
+                                deviceNameSpan.textContent = deviceText.trim();
+                                deviceInfoDiv.classList.add('show');
+                            }
+
+                            // 读取拍摄时间
+                            const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
+                            console.log('拍摄时间原始值:', dateTime);
+                            deviceInfo.dateTime = dateTime;
+
+                            // 读取GPS信息
+                            const lat = EXIF.getTag(this, 'GPSLatitude');
+                            const latRef = EXIF.getTag(this, 'GPSLatitudeRef');
+                            const lon = EXIF.getTag(this, 'GPSLongitude');
+                            const lonRef = EXIF.getTag(this, 'GPSLongitudeRef');
+
+                            console.log('GPS原始数据:', {lat, latRef, lon, lonRef});
+
+                            if (lat && lon && Array.isArray(lat) && Array.isArray(lon) && lat.length >= 3 && lon.length >= 3) {
+                                // 转换为十进制度数
+                                const latitude = convertDMSToDD2(lat[0], lat[1], lat[2], latRef);
+                                const longitude = convertDMSToDD2(lon[0], lon[1], lon[2], lonRef);
+
+                                console.log('转换后的GPS坐标:', {latitude, longitude});
+
+                                deviceInfo.gpsLatitude = latitude;
+                                deviceInfo.gpsLongitude = longitude;
+
+                                // 格式化经纬度 - 无论如何都先保存经纬度
+                                const coords = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+                                deviceInfo.location = coords; // 先设置经纬度，确保至少有这个
+
+                                console.log('开始获取地址...');
+
+                                // 尝试获取地址
+                                reverseGeocode(latitude, longitude).then(location => {
+                                    console.log('地址获取结果:', location);
+                                    if (location) {
+                                        // 中文地址 + 经纬度
+                                        deviceInfo.location = `${location} (${coords})`;
+                                    }
+                                }).catch(err => {
+                                    console.log('地址获取失败:', err);
+                                    // 保持经纬度显示
+                                });
+
+                                // 查询天气（如果有拍摄日期）
+                                if (dateTime) {
+                                    console.log('开始查询天气...');
+                                    // 将EXIF日期格式 "2024:01:30 14:30:25" 转换为 "2024-01-30"
+                                    const datePart = dateTime.split(' ')[0].replace(/:/g, '-');
+                                    console.log('天气查询日期:', datePart);
+
+                                    getHistoricalWeather(latitude, longitude, datePart).then(weather => {
+                                        console.log('天气查询结果:', weather);
+                                        if (weather) {
+                                            deviceInfo.weather = weather;
+                                        }
+                                    }).catch(err => {
+                                        console.log('天气查询失败:', err);
+                                    });
+                                }
+                            } else {
+                                console.log('GPS数据不完整或格式错误');
+                            }
+
+                            console.log('最终deviceInfo:', deviceInfo);
+                            resolve();
+                        });
+                    };
+                };
+
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function convertDMSToDD2(degrees, minutes, seconds, direction) {
+            let dd = degrees + minutes / 60 + seconds / 3600;
+            if (direction === 'S' || direction === 'W') {
+                dd = dd * -1;
+            }
+            return dd;
+        }
+
+        // 识别相机品牌并返回logo信息
+        function getBrandInfo(make) {
+            if (!make) return { logo: null, logoKey: null, color: '#333' };
+
+            const makeUpper = make.toUpperCase();
+
+            // 品牌映射表
+            const brandMap = {
+                'APPLE': 'apple',
+                'SONY': 'sony',
+                'FUJIFILM': 'fujifilm',
+                'FUJI': 'fujifilm',
+                'CANON': 'canon',
+                'NIKON': 'nikon',
+                'LEICA': 'leica',
+                'RICOH': 'ricoh'
+            };
+
+            for (const [brand, logoKey] of Object.entries(brandMap)) {
+                if (makeUpper.includes(brand)) {
+                    return {
+                        logo: brandLogos[logoKey] || null,
+                        logoKey: logoKey,
+                        color: '#000000'
+                    };
+                }
+            }
+
+            return { logo: null, logoKey: null, color: '#333' };
+        }
+
+        // 反向地理编码（使用免费的nominatim服务）
+        async function reverseGeocode(lat, lon) {
+            try {
+                const response = await fetch(
+                    `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lon}&zoom=10&addressdetails=1&accept-language=zh-CN`,
+                    {
+                        headers: {
+                            'User-Agent': 'PhotoFrameTool/1.0'
+                        }
+                    }
+                );
+
+                if (!response.ok) {
+                    return null;
+                }
+
+                const data = await response.json();
+
+                // 只提取城市名称，不要国家、不要县区
+                const addr = data.address || {};
+
+                // 只返回市级地址
+                if (addr.city) {
+                    return addr.city;
+                } else if (addr.town) {
+                    return addr.town;
+                }
+
+                return null;
+            } catch (err) {
+                console.log('地理编码错误:', err);
+                return null;
+            }
+        }
+
+        // 将天气代码转换为中文描述
+        function getWeatherDescription(weatherCode) {
+            const weatherMap = {
+                0: '晴天',
+                1: '晴到多云',
+                2: '多云',
+                3: '阴天',
+                45: '雾',
+                48: '雾',
+                51: '小雨',
+                53: '中雨',
+                55: '大雨',
+                56: '冻雨',
+                57: '冻雨',
+                61: '小雨',
+                63: '中雨',
+                65: '大雨',
+                66: '冻雨',
+                67: '冻雨',
+                71: '小雪',
+                73: '中雪',
+                75: '大雪',
+                77: '雪',
+                80: '阵雨',
+                81: '阵雨',
+                82: '大阵雨',
+                85: '阵雪',
+                86: '阵雪',
+                95: '雷暴',
+                96: '雷暴',
+                99: '雷暴'
+            };
+            return weatherMap[weatherCode] || '未知';
+        }
+
+        // 查询历史天气（使用免费的Open-Meteo API）
+        async function getHistoricalWeather(lat, lon, date) {
+            try {
+                // date格式应该是 "YYYY-MM-DD"
+                const response = await fetch(
+                    `https://archive-api.open-meteo.com/v1/archive?latitude=${lat}&longitude=${lon}&start_date=${date}&end_date=${date}&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=auto`
+                );
+
+                if (!response.ok) {
+                    console.log('天气API请求失败:', response.status);
+                    return null;
+                }
+
+                const data = await response.json();
+                console.log('天气API返回数据:', data);
+
+                if (data.daily && data.daily.weathercode && data.daily.weathercode.length > 0) {
+                    const weatherCode = data.daily.weathercode[0];
+                    const tempMax = data.daily.temperature_2m_max[0];
+                    const tempMin = data.daily.temperature_2m_min[0];
+
+                    const weatherDesc = getWeatherDescription(weatherCode);
+                    const avgTemp = Math.round((tempMax + tempMin) / 2);
+
+                    return {
+                        description: weatherDesc,
+                        temperature: avgTemp
+                    };
+                }
+
+                return null;
+            } catch (err) {
+                console.log('天气查询错误:', err);
+                return null;
+            }
+        }
+
+        // 生成照片
+        processBtn.addEventListener('click', () => {
+            if (!selectedImage) {
+                alert('请先选择照片！');
+                return;
+            }
+
+            const photographer = photographerInput.value.trim();
+            if (!photographer) {
+                alert('请输入拍摄者名称！');
+                return;
+            }
+
+            const customText = customTextInput.value.trim();
+
+            loading.classList.add('show');
+            processBtn.disabled = true;
+
+            // 使用setTimeout让界面有时间更新
+            setTimeout(() => {
+                processImage(photographer, customText);
+            }, 100);
+        });
+
+        // 处理图片
+        function processImage(photographer, customText) {
+            try {
+                // 设置最大画布宽度限制（避免超大图片导致浏览器崩溃）
+                const MAX_WIDTH = 3000; // 最大宽度3000px，足够高清
+
+                // 根据原图尺寸动态设置画布尺寸，保持高分辨率
+                // 如果原图尺寸小于1080，则使用1080作为基准
+                // 如果原图尺寸大于MAX_WIDTH，则限制为MAX_WIDTH
+                let baseWidth = Math.max(selectedImage.width, 1080);
+                baseWidth = Math.min(baseWidth, MAX_WIDTH);
+
+                console.log(`原图尺寸: ${selectedImage.width}x${selectedImage.height}, 画布宽度: ${baseWidth}`);
+
+                // 获取用户选择的比例
+                const ratio = ratioSelect.value;
+                let canvasWidth, canvasHeight;
+
+                if (ratio === '1:1') {
+                    // 1:1 方形
+                    canvasWidth = baseWidth;
+                    canvasHeight = baseWidth;
+                } else {
+                    // 9:16 竖版（默认）
+                    canvasWidth = baseWidth;
+                    canvasHeight = Math.round(baseWidth * 16 / 9);
+                }
+
+                previewCanvas.width = canvasWidth;
+                previewCanvas.height = canvasHeight;
+
+            // 填充白色背景
+            ctx.fillStyle = '#FFFFFF';
+            ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+
+            // 根据画布宽度计算比例缩放
+            const scale = canvasWidth / 1080;
+
+            // 计算照片区域 (留出上下左右边距和底部水印空间)
+            const padding = Math.round(60 * scale);
+            // 1:1画面需要更多底部空间，因为空间更紧凑
+            const bottomSpace = ratio === '1:1' ? Math.round(180 * scale) : Math.round(120 * scale);
+            const photoAreaWidth = canvasWidth - (padding * 2);
+            const photoAreaHeight = canvasHeight - (padding * 2) - bottomSpace;
+
+            // 计算照片缩放比例，保持原始宽高比
+            const imgRatio = selectedImage.width / selectedImage.height;
+            const areaRatio = photoAreaWidth / photoAreaHeight;
+
+            let drawWidth, drawHeight, drawX, drawY;
+
+            if (imgRatio > areaRatio) {
+                // 照片更宽，以宽度为准
+                drawWidth = photoAreaWidth;
+                drawHeight = photoAreaWidth / imgRatio;
+            } else {
+                // 照片更高，以高度为准
+                drawHeight = photoAreaHeight;
+                drawWidth = photoAreaHeight * imgRatio;
+            }
+
+            // 居中计算
+            drawX = padding + (photoAreaWidth - drawWidth) / 2;
+            drawY = padding + (photoAreaHeight - drawHeight) / 2;
+
+            // 绘制照片
+            ctx.drawImage(selectedImage, drawX, drawY, drawWidth, drawHeight);
+
+            // 准备水印信息
+            console.log('生成水印时的deviceInfo:', deviceInfo);
+
+            // 处理设备名称：索尼、富士、理光需要加品牌名
+            let deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
+            if (deviceInfo.make) {
+                const makeUpper = deviceInfo.make.toUpperCase();
+                if (makeUpper.includes('SONY') && deviceInfo.model) {
+                    deviceText = `Sony ${deviceInfo.model}`;
+                } else if ((makeUpper.includes('FUJI') || makeUpper.includes('FUJIFILM')) && deviceInfo.model) {
+                    deviceText = `Fujifilm ${deviceInfo.model}`;
+                } else if (makeUpper.includes('RICOH') && deviceInfo.model) {
+                    deviceText = `Ricoh ${deviceInfo.model}`;
+                }
+            }
+
+            // 格式化拍摄时间
+            let dateText = '';
+            if (deviceInfo.dateTime) {
+                console.log('原始拍摄时间:', deviceInfo.dateTime);
+                // EXIF格式: "2024:01:30 14:30:25" 转换为 "2024年1月30日"
+                const parts = deviceInfo.dateTime.split(' ')[0].split(':');
+                if (parts.length === 3) {
+                    dateText = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                    console.log('格式化后的时间:', dateText);
+                }
+            } else {
+                console.log('没有拍摄时间信息');
+            }
+
+            const locationText = deviceInfo.location || '';
+            console.log('地址信息:', locationText);
+
+            // 构建水印文字数组
+            const watermarkLines = [];
+
+            // 第一行：拍摄者和设备
+            watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
+
+            // 第二行：时间和地点和天气
+            let secondLine = '';
+            if (dateText && locationText) {
+                secondLine = `${dateText} · ${locationText}`;
+            } else if (dateText) {
+                secondLine = dateText;
+            } else if (locationText) {
+                secondLine = locationText;
+            }
+
+            // 添加天气信息到第二行末尾
+            if (deviceInfo.weather) {
+                const weatherText = `${deviceInfo.weather.description} ${deviceInfo.weather.temperature}°C`;
+                if (secondLine) {
+                    secondLine += ` · ${weatherText}`;
+                } else {
+                    secondLine = weatherText;
+                }
+            }
+
+            if (secondLine) {
+                watermarkLines.push(secondLine);
+            }
+
+            // 第三行：自定义文字（如果用户填写了）
+            if (customText) {
+                watermarkLines.push(customText);
+            }
+
+            console.log('最终水印行:', watermarkLines);
+
+            // 在照片和水印之间绘制品牌logo（图片形式）
+            const photoBottom = drawY + drawHeight;
+            const canvasBottom = canvasHeight - padding;
+            const availableSpace = canvasBottom - photoBottom;
+
+            // 获取品牌logo信息
+            const brandInfo = getBrandInfo(deviceInfo.make);
+
+            // 如果有品牌logo图片，在照片下方绘制
+            if (brandInfo.logo) {
+                // 根据画面比例和品牌设置不同的logo高度
+                let logoHeight = Math.round(50 * scale); // 默认logo高度
+
+                // 1:1画面比例时，大幅减小logo尺寸以避免与水印重叠
+                if (ratio === '1:1') {
+                    logoHeight = Math.round(25 * scale);
+                }
+
+                // Leica和Fujifilm的logo需要更大
+                if (brandInfo.logoKey === 'leica') {
+                    logoHeight = ratio === '1:1' ? Math.round(25 * scale) : Math.round(60 * scale);
+                } else if (brandInfo.logoKey === 'fujifilm') {
+                    logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(100 * scale);
+                }
+
+                // 根据画面比例调整logo位置
+                const logoYOffset = ratio === '1:1' ? Math.round(30 * scale) : Math.round(45 * scale);
+                const logoY = photoBottom + logoYOffset;
+
+                // 计算logo宽度（保持宽高比）
+                const logoWidth = brandInfo.logo.width * (logoHeight / brandInfo.logo.height);
+
+                // SVG logo需要特殊处理（设置透明度和颜色）
+                ctx.save();
+                ctx.globalAlpha = 1.0; // 完全不透明
+
+                // 居中绘制logo
+                const logoX = (canvasWidth - logoWidth) / 2;
+                ctx.drawImage(brandInfo.logo, logoX, logoY - logoHeight / 2, logoWidth, logoHeight);
+
+                ctx.restore();
+            }
+
+            // 设置文字样式基础属性
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            // 计算水印位置：照片底部和白边框底部的中间
+            const lineHeight = Math.round(35 * scale);
+            const totalTextHeight = watermarkLines.length * lineHeight;
+
+            // 居中起始位置
+            let textY = photoBottom + (availableSpace - totalTextHeight) / 2 + lineHeight / 2;
+
+            // 字体大小随比例缩放
+            const fontSize1 = Math.round(28 * scale);
+            const fontSize2 = Math.round(24 * scale);
+
+            // 绘制每一行文字
+            watermarkLines.forEach((line, index) => {
+                if (index === 0) {
+                    // 第一行：苹果风格字体，较大斜体
+                    ctx.font = `italic ${fontSize1}px "SF Pro Display", -apple-system, BlinkMacSystemFont, sans-serif`;
+                    ctx.fillStyle = '#1d1d1f';
+                    ctx.fillText(line, canvasWidth / 2, textY);
+                } else if (index === 1) {
+                    // 第二行：苹果风格字体，较小斜体
+                    ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
+                    ctx.fillStyle = '#4a4a4a';
+                    ctx.fillText(line, canvasWidth / 2, textY);
+                } else {
+                    // 第三行：自定义文字，使用相同样式
+                    ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
+                    ctx.fillStyle = '#4a4a4a';
+                    ctx.fillText(line, canvasWidth / 2, textY);
+                }
+                textY += lineHeight;
+            });
+
+            // 显示预览
+            preview.classList.add('show');
+            loading.classList.remove('show');
+            processBtn.disabled = false;
+
+            // 计算并显示文件大小
+            calculateFileSize();
+
+            // 滚动到预览区域
+            setTimeout(() => {
+                preview.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }, 100);
+            } catch (error) {
+                console.error('图片处理错误:', error);
+                alert('图片处理失败，可能是图片尺寸过大。请尝试使用较小的图片。');
+                loading.classList.remove('show');
+                processBtn.disabled = false;
+            }
+        }
+
+        // 计算预估文件大小
+        function calculateFileSize() {
+            const quality = qualitySelect.value;
+            let qualityValue;
+
+            switch(quality) {
+                case 'high':
+                    qualityValue = 1.0;
+                    break;
+                case 'medium':
+                    qualityValue = 0.8;
+                    break;
+                case 'low':
+                    qualityValue = 0.6;
+                    break;
+                default:
+                    qualityValue = 1.0;
+            }
+
+            // 根据画布尺寸和质量预估文件大小
+            const pixels = previewCanvas.width * previewCanvas.height;
+            // JPEG压缩后，每像素约0.5-1.5字节，取决于质量
+            const bytesPerPixel = 0.5 + qualityValue * 0.8;
+            const estimatedBytes = pixels * bytesPerPixel;
+            const estimatedMB = (estimatedBytes / (1024 * 1024)).toFixed(2);
+
+            fileSizeInfo.textContent = `预估文件大小：${estimatedMB} MB`;
+        }
+
+        // 下载照片
+        downloadBtn.addEventListener('click', async () => {
+            try {
+                // 获取用户选择的画质
+                const quality = qualitySelect.value;
+                let qualityValue;
+
+                switch(quality) {
+                    case 'high':
+                        qualityValue = 1.0;
+                        break;
+                    case 'medium':
+                        qualityValue = 0.8;
+                        break;
+                    case 'low':
+                        qualityValue = 0.6;
+                        break;
+                    default:
+                        qualityValue = 1.0;
+                }
+
+                // 转换为Blob对象
+                previewCanvas.toBlob(async (blob) => {
+                    // 检测是否支持 Web Share API（iOS Safari支持）
+                    if (navigator.share && navigator.canShare) {
+                        try {
+                            const file = new File([blob], `photo_${new Date().getTime()}.jpg`, { type: 'image/jpeg' });
+                            if (navigator.canShare({ files: [file] })) {
+                                await navigator.share({
+                                    files: [file],
+                                    title: '照片加边框',
+                                    text: '保存照片到相册'
+                                });
+                                return;
+                            }
+                        } catch (err) {
+                            console.log('Share API failed:', err);
+                        }
+                    }
+
+                    // 降级方案：传统下载方式
+                    const link = document.createElement('a');
+                    const timestamp = new Date().getTime();
+                    link.download = `photo_with_frame_${timestamp}.jpg`;
+                    link.href = URL.createObjectURL(blob);
+                    link.click();
+                    URL.revokeObjectURL(link.href);
+                }, 'image/jpeg', qualityValue);
+            } catch (err) {
+                console.error('下载失败:', err);
+                alert('保存失败，请重试');
+            }
+        });
+    </script>
+</body>
+</html>
