@@ -1039,7 +1039,7 @@
 
                 // Leica和Fujifilm的logo需要更大
                 if (brandInfo.logoKey === 'leica') {
-                    logoHeight = ratio === '1:1' ? Math.round(32 * scale) : Math.round(85 * scale);
+                    logoHeight = ratio === '1:1' ? Math.round(25 * scale) : Math.round(60 * scale);
                 } else if (brandInfo.logoKey === 'fujifilm') {
                     logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(100 * scale);
                 }
@@ -1053,7 +1053,7 @@
 
                 // SVG logo需要特殊处理（设置透明度和颜色）
                 ctx.save();
-                ctx.globalAlpha = 0.25; // 25%透明度，稍微明显一些
+                ctx.globalAlpha = 1.0; // 完全不透明
 
                 // 居中绘制logo
                 const logoX = (canvasWidth - logoWidth) / 2;
