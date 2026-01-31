@@ -1039,7 +1039,7 @@
 
                 // Leica和Fujifilm的logo需要更大
                 if (brandInfo.logoKey === 'leica') {
-                    logoHeight = ratio === '1:1' ? Math.round(45 * scale) : Math.round(120 * scale);
+                    logoHeight = ratio === '1:1' ? Math.round(32 * scale) : Math.round(85 * scale);
                 } else if (brandInfo.logoKey === 'fujifilm') {
                     logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(100 * scale);
                 }
@@ -1087,12 +1087,12 @@
                 } else if (index === 1) {
                     // 第二行：苹果风格字体，较小斜体
                     ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
-                    ctx.fillStyle = '#86868b';
+                    ctx.fillStyle = '#4a4a4a';
                     ctx.fillText(line, canvasWidth / 2, textY);
                 } else {
                     // 第三行：自定义文字，使用相同样式
                     ctx.font = `italic ${fontSize2}px "SF Pro Text", -apple-system, BlinkMacSystemFont, sans-serif`;
-                    ctx.fillStyle = '#86868b';
+                    ctx.fillStyle = '#4a4a4a';
                     ctx.fillText(line, canvasWidth / 2, textY);
                 }
                 textY += lineHeight;
