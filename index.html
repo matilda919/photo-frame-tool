@@ -1035,11 +1035,17 @@
                     logoHeight = Math.round(25 * scale);
                 }
 
-                // Leica和Fujifilm的logo需要更大
+                // 为每个品牌设置合适的logo高度
                 if (brandInfo.logoKey === 'leica') {
                     logoHeight = ratio === '1:1' ? Math.round(25 * scale) : Math.round(60 * scale);
                 } else if (brandInfo.logoKey === 'fujifilm') {
-                    logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(100 * scale);
+                    logoHeight = ratio === '1:1' ? Math.round(35 * scale) : Math.round(80 * scale);
+                } else if (brandInfo.logoKey === 'sony') {
+                    logoHeight = ratio === '1:1' ? Math.round(30 * scale) : Math.round(70 * scale);
+                } else if (brandInfo.logoKey === 'ricoh') {
+                    logoHeight = ratio === '1:1' ? Math.round(28 * scale) : Math.round(55 * scale);
+                } else if (brandInfo.logoKey === 'apple') {
+                    logoHeight = ratio === '1:1' ? Math.round(30 * scale) : Math.round(60 * scale);
                 }
 
                 // 根据画面比例调整logo位置
@@ -1201,3 +1207,4 @@
     </script>
 </body>
 </html>
+
