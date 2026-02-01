@@ -357,37 +357,23 @@
             <input type="file" id="fileInput" accept="image/*">
         </div>
 
-        <div class="device-info" id="deviceInfo">
-            📱 检测到设备：<span id="deviceName">未知</span>
-        </div>
-
         <div class="input-group">
-            <label for="deviceInput">用什么拍的？</label>
+            <label for="deviceInput">📷 用什么拍的？</label>
             <input type="text" id="deviceInput" placeholder="相机或手机型号" value="">
         </div>
 
         <div class="input-group">
-            <label for="dateTimeInput">拍摄时间</label>
-            <input type="text" id="dateTimeInput" placeholder="例如：2024年1月30日" value="">
+            <label for="timeLocationInput">📍 记录时间&地点</label>
+            <input type="text" id="timeLocationInput" placeholder="例如：2024年1月30日 · 北京" value="">
         </div>
 
         <div class="input-group">
-            <label for="locationInput">拍摄地点</label>
-            <input type="text" id="locationInput" placeholder="例如：北京" value="">
-        </div>
-
-        <div class="input-group">
-            <label for="coordinatesInput">经纬度（可选）</label>
-            <input type="text" id="coordinatesInput" placeholder="例如：39.90°, 116.40°" value="">
-        </div>
-
-        <div class="input-group">
-            <label for="photographerInput">谁是摄影师？</label>
+            <label for="photographerInput">👤 谁是摄影师？</label>
             <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
         </div>
 
         <div class="input-group">
-            <label for="customTextInput">记录今天的心情吧~</label>
+            <label for="customTextInput">💭 记录今天的心情吧~</label>
             <input type="text" id="customTextInput" placeholder="分享你的心情或想法..." value="">
         </div>
 
@@ -519,9 +505,7 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const deviceInput = document.getElementById('deviceInput');
-        const dateTimeInput = document.getElementById('dateTimeInput');
-        const locationInput = document.getElementById('locationInput');
-        const coordinatesInput = document.getElementById('coordinatesInput');
+        const timeLocationInput = document.getElementById('timeLocationInput');
         const photographerInput = document.getElementById('photographerInput');
         const customTextInput = document.getElementById('customTextInput');
         const ratioSelect = document.getElementById('ratioSelect');
@@ -659,9 +643,6 @@
                                     if (deviceText) deviceText += ' ';
                                     deviceText += model;
                                 }
-                                deviceNameSpan.textContent = deviceText.trim();
-                                deviceInfoDiv.classList.add('show');
-
                                 // 自动填充"用什么拍的"输入框
                                 deviceInput.value = deviceText.trim();
                             }
@@ -672,11 +653,11 @@
                             deviceInfo.dateTime = dateTime;
 
                             // 自动填充拍摄时间输入框
+                            let formattedDateTime = '';
                             if (dateTime) {
                                 const parts = dateTime.split(' ')[0].split(':');
                                 if (parts.length === 3) {
-                                    const formattedDate = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
-                                    dateTimeInput.value = formattedDate;
+                                    formattedDateTime = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
                                 }
                             }
 
@@ -698,12 +679,11 @@
                                 deviceInfo.gpsLatitude = latitude;
                                 deviceInfo.gpsLongitude = longitude;
 
-                                // 格式化经纬度 - 无论如何都先保存经纬度
-                                const coords = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
+                                // 格式化经纬度为"东经/西经xx°，北纬/南纬xx°"
+                                const latDirection = latitude >= 0 ? '北纬' : '南纬';
+                                const lonDirection = longitude >= 0 ? '东经' : '西经';
+                                const coords = `${lonDirection}${Math.abs(longitude).toFixed(2)}°，${latDirection}${Math.abs(latitude).toFixed(2)}°`;
                                 deviceInfo.location = coords; // 先设置经纬度，确保至少有这个
-
-                                // 自动填充经纬度输入框
-                                coordinatesInput.value = coords;
 
                                 console.log('开始获取地址...');
 
@@ -713,12 +693,22 @@
                                     if (location) {
                                         // 中文地址 + 经纬度
                                         deviceInfo.location = `${location} (${coords})`;
-                                        // 自动填充拍摄地点输入框
-                                        locationInput.value = location;
+                                        // 自动填充"记录时间&地点"输入框
+                                        if (formattedDateTime) {
+                                            timeLocationInput.value = `${formattedDateTime} · ${location}`;
+                                        } else {
+                                            timeLocationInput.value = location;
+                                        }
+                                    } else if (formattedDateTime) {
+                                        // 如果没有地点但有时间，只填充时间
+                                        timeLocationInput.value = formattedDateTime;
                                     }
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
-                                    // 保持经纬度显示
+                                    // 如果地址获取失败但有时间，只填充时间
+                                    if (formattedDateTime) {
+                                        timeLocationInput.value = formattedDateTime;
+                                    }
                                 });
 
                                 // 查询天气（如果有拍摄日期）
@@ -994,16 +984,7 @@
 
             // 从输入框读取用户填写或修改后的信息
             const deviceText = deviceInput.value.trim() || deviceInfo.model || deviceInfo.make || '未知设备';
-            const dateText = dateTimeInput.value.trim();
-            let locationText = locationInput.value.trim();
-            const coordsText = coordinatesInput.value.trim();
-
-            // 如果有地点和经纬度，组合显示
-            if (locationText && coordsText) {
-                locationText = `${locationText} (${coordsText})`;
-            } else if (coordsText) {
-                locationText = coordsText;
-            }
+            const timeLocationText = timeLocationInput.value.trim();
 
             // 构建水印文字数组
             const watermarkLines = [];
@@ -1011,15 +992,8 @@
             // 第一行：拍摄者和设备
             watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
 
-            // 第二行：时间和地点和天气
-            let secondLine = '';
-            if (dateText && locationText) {
-                secondLine = `${dateText} · ${locationText}`;
-            } else if (dateText) {
-                secondLine = dateText;
-            } else if (locationText) {
-                secondLine = locationText;
-            }
+            // 第二行：时间和地点（从合并的输入框读取）
+            let secondLine = timeLocationText;
 
             // 添加天气信息到第二行末尾
             if (deviceInfo.weather) {
