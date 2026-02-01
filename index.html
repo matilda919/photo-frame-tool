@@ -357,18 +357,17 @@
             <input type="file" id="fileInput" accept="image/*">
         </div>
 
-        <div class="input-group">
-            <label for="deviceInput">📷 用什么拍的？</label>
-            <input type="text" id="deviceInput" placeholder="相机或手机型号" value="">
+        <div class="device-info" id="deviceInfo">
+            📱 检测到设备：<span id="deviceName">未知</span>
         </div>
 
         <div class="input-group">
-            <label for="photographerInput">👤 谁是摄影师？</label>
+            <label for="photographerInput">谁是摄影师？</label>
             <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
         </div>
 
         <div class="input-group">
-            <label for="customTextInput">💭 记录今天的心情吧~</label>
+            <label for="customTextInput">记录今天的心情吧~</label>
             <input type="text" id="customTextInput" placeholder="分享你的心情或想法..." value="">
         </div>
 
@@ -415,7 +414,6 @@
         };
         let brandLogos = {}; // 存储加载的品牌logo图片
         let logosLoaded = false; // 标记logo是否加载完成
-        let geocodingPromise = null; // 存储地理编码的Promise，确保等待完成
 
         // 预加载品牌logo图片（使用可靠的CDN）
         function loadBrandLogos() {
@@ -500,7 +498,6 @@
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
-        const deviceInput = document.getElementById('deviceInput');
         const photographerInput = document.getElementById('photographerInput');
         const customTextInput = document.getElementById('customTextInput');
         const ratioSelect = document.getElementById('ratioSelect');
@@ -509,6 +506,8 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const preview = document.getElementById('preview');
         const previewCanvas = document.getElementById('previewCanvas');
+        const deviceInfoDiv = document.getElementById('deviceInfo');
+        const deviceNameSpan = document.getElementById('deviceName');
         const loading = document.getElementById('loading');
         const fileSizeInfo = document.getElementById('fileSizeInfo');
         const ctx = previewCanvas.getContext('2d');
@@ -636,25 +635,14 @@
                                     if (deviceText) deviceText += ' ';
                                     deviceText += model;
                                 }
-                                // 自动填充"用什么拍的"输入框
-                                deviceInput.value = deviceText.trim();
-                                console.log('已填充设备信息:', deviceText.trim());
+                                deviceNameSpan.textContent = deviceText.trim();
+                                deviceInfoDiv.classList.add('show');
                             }
 
                             // 读取拍摄时间
                             const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
                             console.log('拍摄时间原始值:', dateTime);
                             deviceInfo.dateTime = dateTime;
-
-                            // 格式化拍摄时间
-                            let formattedDateTime = '';
-                            if (dateTime) {
-                                const parts = dateTime.split(' ')[0].split(':');
-                                if (parts.length === 3) {
-                                    formattedDateTime = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
-                                    console.log('格式化后的时间:', formattedDateTime);
-                                }
-                            }
 
                             // 读取GPS信息
                             const lat = EXIF.getTag(this, 'GPSLatitude');
@@ -674,29 +662,22 @@
                                 deviceInfo.gpsLatitude = latitude;
                                 deviceInfo.gpsLongitude = longitude;
 
-                                // 格式化经纬度为"东经/西经xx°，北纬/南纬xx°"
-                                const latDirection = latitude >= 0 ? '北纬' : '南纬';
-                                const lonDirection = longitude >= 0 ? '东经' : '西经';
-                                const coords = `${lonDirection}${Math.abs(longitude).toFixed(2)}°，${latDirection}${Math.abs(latitude).toFixed(2)}°`;
+                                // 格式化经纬度 - 无论如何都先保存经纬度
+                                const coords = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
                                 deviceInfo.location = coords; // 先设置经纬度，确保至少有这个
 
                                 console.log('开始获取地址...');
 
-                                // 尝试获取地址，并保存Promise以便后续等待
-                                geocodingPromise = reverseGeocode(latitude, longitude).then(location => {
+                                // 尝试获取地址
+                                reverseGeocode(latitude, longitude).then(location => {
                                     console.log('地址获取结果:', location);
                                     if (location) {
                                         // 中文地址 + 经纬度
                                         deviceInfo.location = `${location} (${coords})`;
-                                    } else {
-                                        deviceInfo.location = coords;
                                     }
-                                    console.log('地理编码完成，最终location:', deviceInfo.location);
-                                    return deviceInfo.location;
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
-                                    deviceInfo.location = coords;
-                                    return coords;
+                                    // 保持经纬度显示
                                 });
 
                                 // 查询天气（如果有拍摄日期）
@@ -876,7 +857,7 @@
         }
 
         // 生成照片
-        processBtn.addEventListener('click', async () => {
+        processBtn.addEventListener('click', () => {
             if (!selectedImage) {
                 alert('请先选择照片！');
                 return;
@@ -892,17 +873,6 @@
 
             loading.classList.add('show');
             processBtn.disabled = true;
-
-            // 如果有地理编码正在进行，先等待其完成
-            if (geocodingPromise) {
-                console.log('等待地理编码完成...');
-                try {
-                    await geocodingPromise;
-                    console.log('地理编码已完成，准备生成照片');
-                } catch (err) {
-                    console.log('等待地理编码时出错:', err);
-                }
-            }
 
             // 使用setTimeout让界面有时间更新
             setTimeout(() => {
@@ -981,29 +951,35 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            // 从输入框读取用户填写或修改后的设备信息
-            const deviceText = deviceInput.value.trim() || deviceInfo.model || deviceInfo.make || '未知设备';
+            // 处理设备名称：索尼、富士、理光需要加品牌名
+            let deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
+            if (deviceInfo.make) {
+                const makeUpper = deviceInfo.make.toUpperCase();
+                if (makeUpper.includes('SONY') && deviceInfo.model) {
+                    deviceText = `Sony ${deviceInfo.model}`;
+                } else if ((makeUpper.includes('FUJI') || makeUpper.includes('FUJIFILM')) && deviceInfo.model) {
+                    deviceText = `Fujifilm ${deviceInfo.model}`;
+                } else if (makeUpper.includes('RICOH') && deviceInfo.model) {
+                    deviceText = `Ricoh ${deviceInfo.model}`;
+                }
+            }
 
             // 格式化拍摄时间
             let dateText = '';
             if (deviceInfo.dateTime) {
+                console.log('原始拍摄时间:', deviceInfo.dateTime);
+                // EXIF格式: "2024:01:30 14:30:25" 转换为 "2024年1月30日"
                 const parts = deviceInfo.dateTime.split(' ')[0].split(':');
                 if (parts.length === 3) {
                     dateText = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                    console.log('格式化后的时间:', dateText);
                 }
+            } else {
+                console.log('没有拍摄时间信息');
             }
 
             const locationText = deviceInfo.location || '';
-            console.log('当前location信息:', locationText);
-
-            // 处理地点信息：优先显示城市，如果有经纬度则一起显示
-            let finalLocationText = '';
-            if (locationText) {
-                // locationText格式可能是 "城市 (经纬度)" 或 "经纬度"
-                // 直接使用即可
-                finalLocationText = locationText;
-            }
-            console.log('最终location信息:', finalLocationText);
+            console.log('地址信息:', locationText);
 
             // 构建水印文字数组
             const watermarkLines = [];
@@ -1011,14 +987,14 @@
             // 第一行：拍摄者和设备
             watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
 
-            // 第二行：时间、地点、天气
+            // 第二行：时间和地点和天气
             let secondLine = '';
-            if (dateText && finalLocationText) {
-                secondLine = `${dateText} · ${finalLocationText}`;
+            if (dateText && locationText) {
+                secondLine = `${dateText} · ${locationText}`;
             } else if (dateText) {
                 secondLine = dateText;
-            } else if (finalLocationText) {
-                secondLine = finalLocationText;
+            } else if (locationText) {
+                secondLine = locationText;
             }
 
             // 添加天气信息到第二行末尾
