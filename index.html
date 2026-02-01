@@ -652,7 +652,7 @@
                             console.log('拍摄时间原始值:', dateTime);
                             deviceInfo.dateTime = dateTime;
 
-                            // 自动填充拍摄时间输入框
+                            // 格式化拍摄时间
                             let formattedDateTime = '';
                             if (dateTime) {
                                 const parts = dateTime.split(' ')[0].split(':');
@@ -694,20 +694,30 @@
                                         // 中文地址 + 经纬度
                                         deviceInfo.location = `${location} (${coords})`;
                                         // 自动填充"记录时间&地点"输入框
-                                        if (formattedDateTime) {
-                                            timeLocationInput.value = `${formattedDateTime} · ${location}`;
+                                        if (formattedDateTime && location) {
+                                            timeLocationInput.value = `${formattedDateTime} · ${location} · ${coords}`;
+                                        } else if (formattedDateTime) {
+                                            timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                        } else if (location) {
+                                            timeLocationInput.value = `${location} · ${coords}`;
                                         } else {
-                                            timeLocationInput.value = location;
+                                            timeLocationInput.value = coords;
                                         }
-                                    } else if (formattedDateTime) {
-                                        // 如果没有地点但有时间，只填充时间
-                                        timeLocationInput.value = formattedDateTime;
+                                    } else {
+                                        // 如果没有地点，显示时间和经纬度
+                                        if (formattedDateTime) {
+                                            timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                        } else {
+                                            timeLocationInput.value = coords;
+                                        }
                                     }
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
-                                    // 如果地址获取失败但有时间，只填充时间
+                                    // 如果地址获取失败，显示时间和经纬度
                                     if (formattedDateTime) {
-                                        timeLocationInput.value = formattedDateTime;
+                                        timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                    } else {
+                                        timeLocationInput.value = coords;
                                     }
                                 });
 
@@ -729,6 +739,10 @@
                                 }
                             } else {
                                 console.log('GPS数据不完整或格式错误');
+                                // 即使没有GPS，也要填充时间
+                                if (formattedDateTime) {
+                                    timeLocationInput.value = formattedDateTime;
+                                }
                             }
 
                             console.log('最终deviceInfo:', deviceInfo);
