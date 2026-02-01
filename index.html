@@ -363,11 +363,6 @@
         </div>
 
         <div class="input-group">
-            <label for="timeLocationInput">📍 记录时间&地点</label>
-            <input type="text" id="timeLocationInput" placeholder="例如：2024年1月30日 · 北京" value="">
-        </div>
-
-        <div class="input-group">
             <label for="photographerInput">👤 谁是摄影师？</label>
             <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
         </div>
@@ -505,7 +500,6 @@
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
         const deviceInput = document.getElementById('deviceInput');
-        const timeLocationInput = document.getElementById('timeLocationInput');
         const photographerInput = document.getElementById('photographerInput');
         const customTextInput = document.getElementById('customTextInput');
         const ratioSelect = document.getElementById('ratioSelect');
@@ -693,40 +687,12 @@
                                     if (location) {
                                         // 中文地址 + 经纬度
                                         deviceInfo.location = `${location} (${coords})`;
-                                        // 自动填充"记录时间&地点"输入框
-                                        if (formattedDateTime && location) {
-                                            timeLocationInput.value = `${formattedDateTime} · ${location} · ${coords}`;
-                                            console.log('已填充时间地点:', timeLocationInput.value);
-                                        } else if (formattedDateTime) {
-                                            timeLocationInput.value = `${formattedDateTime} · ${coords}`;
-                                            console.log('已填充时间经纬度:', timeLocationInput.value);
-                                        } else if (location) {
-                                            timeLocationInput.value = `${location} · ${coords}`;
-                                            console.log('已填充地点经纬度:', timeLocationInput.value);
-                                        } else {
-                                            timeLocationInput.value = coords;
-                                            console.log('已填充经纬度:', timeLocationInput.value);
-                                        }
                                     } else {
-                                        // 如果没有地点，显示时间和经纬度
-                                        if (formattedDateTime) {
-                                            timeLocationInput.value = `${formattedDateTime} · ${coords}`;
-                                            console.log('无地点，已填充时间经纬度:', timeLocationInput.value);
-                                        } else {
-                                            timeLocationInput.value = coords;
-                                            console.log('无地点，已填充经纬度:', timeLocationInput.value);
-                                        }
+                                        deviceInfo.location = coords;
                                     }
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
-                                    // 如果地址获取失败，显示时间和经纬度
-                                    if (formattedDateTime) {
-                                        timeLocationInput.value = `${formattedDateTime} · ${coords}`;
-                                        console.log('地址失败，已填充时间经纬度:', timeLocationInput.value);
-                                    } else {
-                                        timeLocationInput.value = coords;
-                                        console.log('地址失败，已填充经纬度:', timeLocationInput.value);
-                                    }
+                                    deviceInfo.location = coords;
                                 });
 
                                 // 查询天气（如果有拍摄日期）
@@ -747,11 +713,6 @@
                                 }
                             } else {
                                 console.log('GPS数据不完整或格式错误');
-                                // 即使没有GPS，也要填充时间
-                                if (formattedDateTime) {
-                                    timeLocationInput.value = formattedDateTime;
-                                    console.log('无GPS，已填充时间:', formattedDateTime);
-                                }
                             }
 
                             console.log('最终deviceInfo:', deviceInfo);
@@ -1005,9 +966,19 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            // 从输入框读取用户填写或修改后的信息
+            // 从输入框读取用户填写或修改后的设备信息
             const deviceText = deviceInput.value.trim() || deviceInfo.model || deviceInfo.make || '未知设备';
-            const timeLocationText = timeLocationInput.value.trim();
+
+            // 格式化拍摄时间
+            let dateText = '';
+            if (deviceInfo.dateTime) {
+                const parts = deviceInfo.dateTime.split(' ')[0].split(':');
+                if (parts.length === 3) {
+                    dateText = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                }
+            }
+
+            const locationText = deviceInfo.location || '';
 
             // 构建水印文字数组
             const watermarkLines = [];
@@ -1015,8 +986,15 @@
             // 第一行：拍摄者和设备
             watermarkLines.push(`${photographer}使用${deviceText}拍摄`);
 
-            // 第二行：时间和地点（从合并的输入框读取）
-            let secondLine = timeLocationText;
+            // 第二行：时间、地点、天气
+            let secondLine = '';
+            if (dateText && locationText) {
+                secondLine = `${dateText} · ${locationText}`;
+            } else if (dateText) {
+                secondLine = dateText;
+            } else if (locationText) {
+                secondLine = locationText;
+            }
 
             // 添加天气信息到第二行末尾
             if (deviceInfo.weather) {
