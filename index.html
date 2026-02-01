@@ -415,6 +415,7 @@
         };
         let brandLogos = {}; // 存储加载的品牌logo图片
         let logosLoaded = false; // 标记logo是否加载完成
+        let geocodingPromise = null; // 存储地理编码的Promise，确保等待完成
 
         // 预加载品牌logo图片（使用可靠的CDN）
         function loadBrandLogos() {
@@ -681,8 +682,8 @@
 
                                 console.log('开始获取地址...');
 
-                                // 尝试获取地址
-                                reverseGeocode(latitude, longitude).then(location => {
+                                // 尝试获取地址，并保存Promise以便后续等待
+                                geocodingPromise = reverseGeocode(latitude, longitude).then(location => {
                                     console.log('地址获取结果:', location);
                                     if (location) {
                                         // 中文地址 + 经纬度
@@ -690,9 +691,12 @@
                                     } else {
                                         deviceInfo.location = coords;
                                     }
+                                    console.log('地理编码完成，最终location:', deviceInfo.location);
+                                    return deviceInfo.location;
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
                                     deviceInfo.location = coords;
+                                    return coords;
                                 });
 
                                 // 查询天气（如果有拍摄日期）
@@ -872,7 +876,7 @@
         }
 
         // 生成照片
-        processBtn.addEventListener('click', () => {
+        processBtn.addEventListener('click', async () => {
             if (!selectedImage) {
                 alert('请先选择照片！');
                 return;
@@ -888,6 +892,17 @@
 
             loading.classList.add('show');
             processBtn.disabled = true;
+
+            // 如果有地理编码正在进行，先等待其完成
+            if (geocodingPromise) {
+                console.log('等待地理编码完成...');
+                try {
+                    await geocodingPromise;
+                    console.log('地理编码已完成，准备生成照片');
+                } catch (err) {
+                    console.log('等待地理编码时出错:', err);
+                }
+            }
 
             // 使用setTimeout让界面有时间更新
             setTimeout(() => {
@@ -979,6 +994,16 @@
             }
 
             const locationText = deviceInfo.location || '';
+            console.log('当前location信息:', locationText);
+
+            // 处理地点信息：优先显示城市，如果有经纬度则一起显示
+            let finalLocationText = '';
+            if (locationText) {
+                // locationText格式可能是 "城市 (经纬度)" 或 "经纬度"
+                // 直接使用即可
+                finalLocationText = locationText;
+            }
+            console.log('最终location信息:', finalLocationText);
 
             // 构建水印文字数组
             const watermarkLines = [];
@@ -988,12 +1013,12 @@
 
             // 第二行：时间、地点、天气
             let secondLine = '';
-            if (dateText && locationText) {
-                secondLine = `${dateText} · ${locationText}`;
+            if (dateText && finalLocationText) {
+                secondLine = `${dateText} · ${finalLocationText}`;
             } else if (dateText) {
                 secondLine = dateText;
-            } else if (locationText) {
-                secondLine = locationText;
+            } else if (finalLocationText) {
+                secondLine = finalLocationText;
             }
 
             // 添加天气信息到第二行末尾
