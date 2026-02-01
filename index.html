@@ -514,8 +514,6 @@
         const downloadBtn = document.getElementById('downloadBtn');
         const preview = document.getElementById('preview');
         const previewCanvas = document.getElementById('previewCanvas');
-        const deviceInfoDiv = document.getElementById('deviceInfo');
-        const deviceNameSpan = document.getElementById('deviceName');
         const loading = document.getElementById('loading');
         const fileSizeInfo = document.getElementById('fileSizeInfo');
         const ctx = previewCanvas.getContext('2d');
@@ -645,6 +643,7 @@
                                 }
                                 // 自动填充"用什么拍的"输入框
                                 deviceInput.value = deviceText.trim();
+                                console.log('已填充设备信息:', deviceText.trim());
                             }
 
                             // 读取拍摄时间
@@ -658,6 +657,7 @@
                                 const parts = dateTime.split(' ')[0].split(':');
                                 if (parts.length === 3) {
                                     formattedDateTime = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                                    console.log('格式化后的时间:', formattedDateTime);
                                 }
                             }
 
@@ -696,19 +696,25 @@
                                         // 自动填充"记录时间&地点"输入框
                                         if (formattedDateTime && location) {
                                             timeLocationInput.value = `${formattedDateTime} · ${location} · ${coords}`;
+                                            console.log('已填充时间地点:', timeLocationInput.value);
                                         } else if (formattedDateTime) {
                                             timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                            console.log('已填充时间经纬度:', timeLocationInput.value);
                                         } else if (location) {
                                             timeLocationInput.value = `${location} · ${coords}`;
+                                            console.log('已填充地点经纬度:', timeLocationInput.value);
                                         } else {
                                             timeLocationInput.value = coords;
+                                            console.log('已填充经纬度:', timeLocationInput.value);
                                         }
                                     } else {
                                         // 如果没有地点，显示时间和经纬度
                                         if (formattedDateTime) {
                                             timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                            console.log('无地点，已填充时间经纬度:', timeLocationInput.value);
                                         } else {
                                             timeLocationInput.value = coords;
+                                            console.log('无地点，已填充经纬度:', timeLocationInput.value);
                                         }
                                     }
                                 }).catch(err => {
@@ -716,8 +722,10 @@
                                     // 如果地址获取失败，显示时间和经纬度
                                     if (formattedDateTime) {
                                         timeLocationInput.value = `${formattedDateTime} · ${coords}`;
+                                        console.log('地址失败，已填充时间经纬度:', timeLocationInput.value);
                                     } else {
                                         timeLocationInput.value = coords;
+                                        console.log('地址失败，已填充经纬度:', timeLocationInput.value);
                                     }
                                 });
 
@@ -742,6 +750,7 @@
                                 // 即使没有GPS，也要填充时间
                                 if (formattedDateTime) {
                                     timeLocationInput.value = formattedDateTime;
+                                    console.log('无GPS，已填充时间:', formattedDateTime);
                                 }
                             }
 
