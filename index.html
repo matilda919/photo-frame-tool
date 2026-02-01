@@ -362,6 +362,26 @@
         </div>
 
         <div class="input-group">
+            <label for="deviceInput">用什么拍的？</label>
+            <input type="text" id="deviceInput" placeholder="相机或手机型号" value="">
+        </div>
+
+        <div class="input-group">
+            <label for="dateTimeInput">拍摄时间</label>
+            <input type="text" id="dateTimeInput" placeholder="例如：2024年1月30日" value="">
+        </div>
+
+        <div class="input-group">
+            <label for="locationInput">拍摄地点</label>
+            <input type="text" id="locationInput" placeholder="例如：北京" value="">
+        </div>
+
+        <div class="input-group">
+            <label for="coordinatesInput">经纬度（可选）</label>
+            <input type="text" id="coordinatesInput" placeholder="例如：39.90°, 116.40°" value="">
+        </div>
+
+        <div class="input-group">
             <label for="photographerInput">谁是摄影师？</label>
             <input type="text" id="photographerInput" placeholder="请输入拍摄者名称" value="">
         </div>
@@ -498,6 +518,10 @@
 
         const uploadArea = document.getElementById('uploadArea');
         const fileInput = document.getElementById('fileInput');
+        const deviceInput = document.getElementById('deviceInput');
+        const dateTimeInput = document.getElementById('dateTimeInput');
+        const locationInput = document.getElementById('locationInput');
+        const coordinatesInput = document.getElementById('coordinatesInput');
         const photographerInput = document.getElementById('photographerInput');
         const customTextInput = document.getElementById('customTextInput');
         const ratioSelect = document.getElementById('ratioSelect');
@@ -637,12 +661,24 @@
                                 }
                                 deviceNameSpan.textContent = deviceText.trim();
                                 deviceInfoDiv.classList.add('show');
+
+                                // 自动填充"用什么拍的"输入框
+                                deviceInput.value = deviceText.trim();
                             }
 
                             // 读取拍摄时间
                             const dateTime = EXIF.getTag(this, 'DateTimeOriginal') || EXIF.getTag(this, 'DateTime') || '';
                             console.log('拍摄时间原始值:', dateTime);
                             deviceInfo.dateTime = dateTime;
+
+                            // 自动填充拍摄时间输入框
+                            if (dateTime) {
+                                const parts = dateTime.split(' ')[0].split(':');
+                                if (parts.length === 3) {
+                                    const formattedDate = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
+                                    dateTimeInput.value = formattedDate;
+                                }
+                            }
 
                             // 读取GPS信息
                             const lat = EXIF.getTag(this, 'GPSLatitude');
@@ -666,6 +702,9 @@
                                 const coords = `${latitude.toFixed(2)}°, ${longitude.toFixed(2)}°`;
                                 deviceInfo.location = coords; // 先设置经纬度，确保至少有这个
 
+                                // 自动填充经纬度输入框
+                                coordinatesInput.value = coords;
+
                                 console.log('开始获取地址...');
 
                                 // 尝试获取地址
@@ -674,6 +713,8 @@
                                     if (location) {
                                         // 中文地址 + 经纬度
                                         deviceInfo.location = `${location} (${coords})`;
+                                        // 自动填充拍摄地点输入框
+                                        locationInput.value = location;
                                     }
                                 }).catch(err => {
                                     console.log('地址获取失败:', err);
@@ -951,35 +992,18 @@
             // 准备水印信息
             console.log('生成水印时的deviceInfo:', deviceInfo);
 
-            // 处理设备名称：索尼、富士、理光需要加品牌名
-            let deviceText = deviceInfo.model || deviceInfo.make || '未知设备';
-            if (deviceInfo.make) {
-                const makeUpper = deviceInfo.make.toUpperCase();
-                if (makeUpper.includes('SONY') && deviceInfo.model) {
-                    deviceText = `Sony ${deviceInfo.model}`;
-                } else if ((makeUpper.includes('FUJI') || makeUpper.includes('FUJIFILM')) && deviceInfo.model) {
-                    deviceText = `Fujifilm ${deviceInfo.model}`;
-                } else if (makeUpper.includes('RICOH') && deviceInfo.model) {
-                    deviceText = `Ricoh ${deviceInfo.model}`;
-                }
-            }
+            // 从输入框读取用户填写或修改后的信息
+            const deviceText = deviceInput.value.trim() || deviceInfo.model || deviceInfo.make || '未知设备';
+            const dateText = dateTimeInput.value.trim();
+            let locationText = locationInput.value.trim();
+            const coordsText = coordinatesInput.value.trim();
 
-            // 格式化拍摄时间
-            let dateText = '';
-            if (deviceInfo.dateTime) {
-                console.log('原始拍摄时间:', deviceInfo.dateTime);
-                // EXIF格式: "2024:01:30 14:30:25" 转换为 "2024年1月30日"
-                const parts = deviceInfo.dateTime.split(' ')[0].split(':');
-                if (parts.length === 3) {
-                    dateText = `${parts[0]}年${parseInt(parts[1])}月${parseInt(parts[2])}日`;
-                    console.log('格式化后的时间:', dateText);
-                }
-            } else {
-                console.log('没有拍摄时间信息');
+            // 如果有地点和经纬度，组合显示
+            if (locationText && coordsText) {
+                locationText = `${locationText} (${coordsText})`;
+            } else if (coordsText) {
+                locationText = coordsText;
             }
-
-            const locationText = deviceInfo.location || '';
-            console.log('地址信息:', locationText);
 
             // 构建水印文字数组
             const watermarkLines = [];
